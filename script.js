@@ -27,7 +27,10 @@ const translations = {
         resultListPlaceholder: "İsimleri her satıra bir tane gelecek şekilde yapıştırın...",
         resetSettings: "Tüm Ayarları Sıfırla",
         confirmReset: "Tüm ayarları sıfırlamak istediğinizden emin misiniz?",
-        applySettings: "Uygula"
+        applySettings: "Uygula",
+        sortOrder: "Sıralama",
+        ascending: "Yeniden Eskiye",
+        descending: "Eskiden Yeniye"
     },
     en: {
         firstNumber: "First Number",
@@ -56,7 +59,10 @@ const translations = {
         resultListPlaceholder: "Paste names, one per line...",
         resetSettings: "Reset All Settings",
         confirmReset: "Are you sure you want to reset all settings?",
-        applySettings: "Apply"
+        applySettings: "Apply",
+        sortOrder: "Sort Order",
+        ascending: "Newest First",
+        descending: "Oldest First"
     }
 };
 
@@ -72,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closePopup = document.getElementById('closePopup');
     const animationSpeed = document.getElementById('animationSpeed');
     const soundBtn = document.getElementById('soundBtn');
-    const selectSound = document.getElementById('selectSound');
     const processingSound = document.getElementById('processingSound');
     const resultSound = document.getElementById('resultSound');
     const resultList = document.getElementById('resultList');
@@ -84,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('titleInput');
     const resetSettingsBtn = document.getElementById('resetSettings');
     const applySettingsBtn = document.getElementById('applySettings');
+    const sortOrder = document.getElementById('sortOrder');
 
     loadHistory();
     loadSavedNumbers();
@@ -158,6 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resetSettingsBtn.textContent = translations[lang].resetSettings;
         applySettingsBtn.textContent = translations[lang].applySettings;
+
+        document.querySelector('label[for="sortOrder"]').textContent = translations[lang].sortOrder;
+        sortOrder.options[0].textContent = translations[lang].ascending;
+        sortOrder.options[1].textContent = translations[lang].descending;
     }
 
     // Dil seçimi değiştiğinde
@@ -233,11 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         pickButton.disabled = true;
         animateBalls(end);
-
-        if (isSoundOn) {
-            selectSound.currentTime = 0;
-            selectSound.play();
-        }
     });
 
     function animateBalls(max) {
@@ -314,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ball.innerHTML = '';
             ball.appendChild(strip);
 
-            // Her rakam için processing sesini ��al
+            // Her rakam için processing sesini çal
             if (isSoundOn) {
                 processingSound.currentTime = 0;
                 processingSound.play();
@@ -333,12 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             );
-        }
-
-        // Başlangıçta select sesini çal
-        if (isSoundOn) {
-            selectSound.currentTime = 0;
-            selectSound.play();
         }
 
         animateBall(0);
@@ -362,17 +361,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
         const resultItems = JSON.parse(localStorage.getItem('resultList') || '[]');
         const startNumber = parseInt(startNum.value) || 1;
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
         
-        historyList.innerHTML = history
+        // Sıralama için geçici dizi oluştur
+        let sortedHistory = [...history];
+        if (currentSort === 'asc') {
+            sortedHistory.reverse();  // Diziyi ters çevir
+        }
+        
+        historyList.innerHTML = sortedHistory
             .map((num, index) => {
                 const listIndex = num - startNumber;
                 const listItem = resultItems[listIndex];
                 const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
                 const numberSpan = `<span class="result-number">${num}</span>`;
                 
+                // Sıra numarasını doğru hesapla
+                const displayIndex = currentSort === 'asc' ? 
+                    history.length - index : 
+                    index + 1;
+
+                // İsim ve numara aynı kalmalı, sadece sıra numarası değişmeli
                 return `<li>
                     <div class="left-content">
-                        <span class="index-number">#${index + 1}</span>
+                        <span class="index-number">#${displayIndex}</span>
                         ${nameSpan}
                     </div>
                     ${numberSpan}
@@ -386,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSavedNumbers() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
         if (history.length > 0) {
-            // Kullanılmış sayıları yükle
+            // Kullanılmış sayıları ykle
             const savedUsedNumbers = JSON.parse(localStorage.getItem('usedNumbers') || '[]');
             usedNumbers = new Set(savedUsedNumbers);
 
@@ -544,6 +556,10 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('resultList');
             resultList.value = '';
 
+            // Sıralama ayarını varsayılana getir (desc)
+            sortOrder.value = 'desc';
+            localStorage.setItem('sortOrder', 'desc');
+
             // Listeyi güncelle
             loadHistory();
         }
@@ -553,4 +569,14 @@ document.addEventListener('DOMContentLoaded', () => {
     applySettingsBtn.addEventListener('click', () => {
         settingsPopup.style.display = 'none';  // Sadece popup'ı kapat
     });
+
+    // Sıralama tercihini kaydet
+    sortOrder.addEventListener('change', () => {
+        localStorage.setItem('sortOrder', sortOrder.value);
+        loadHistory();  // Listeyi yeniden yükle
+    });
+
+    // Sayfa yüklendiğinde sıralama tercihini yükle
+    const savedSort = localStorage.getItem('sortOrder') || 'desc';
+    sortOrder.value = savedSort;
 }); 

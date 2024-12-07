@@ -71,6 +71,13 @@
                     </select>
                 </div>
                 <div class="setting-item">
+                    <label for="sortOrder">Sıralama</label>
+                    <select id="sortOrder">
+                        <option value="asc">Eskiden Yeniye</option>
+                        <option value="desc" selected>Yeniden Eskiye</option>
+                    </select>
+                </div>
+                <div class="setting-item">
                     <label for="language">Dil / Language</label>
                     <select id="language">
                         <option value="tr">Türkçe</option>
@@ -89,7 +96,6 @@
         </div>
     </div>
 
-    <audio id="selectSound" src="sound/select.mp3"></audio>
     <audio id="processingSound" src="sound/processing.mp3"></audio>
     <audio id="resultSound" src="sound/result.mp3"></audio>
     <audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
