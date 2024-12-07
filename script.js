@@ -30,7 +30,8 @@ const translations = {
         applySettings: "Uygula",
         sortOrder: "Sıralama",
         ascending: "Yeniden Eskiye",
-        descending: "Eskiden Yeniye"
+        descending: "Eskiden Yeniye",
+        noResults: "Henüz çekiliş sonucu bulunmuyor"
     },
     en: {
         firstNumber: "First Number",
@@ -62,7 +63,8 @@ const translations = {
         applySettings: "Apply",
         sortOrder: "Sort Order",
         ascending: "Newest First",
-        descending: "Oldest First"
+        descending: "Oldest First",
+        noResults: "No draw results yet"
     }
 };
 
@@ -168,6 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="sortOrder"]').textContent = translations[lang].sortOrder;
         sortOrder.options[0].textContent = translations[lang].ascending;
         sortOrder.options[1].textContent = translations[lang].descending;
+
+        // Boş durum mesajını güncelle
+        if (historyList.querySelector('.empty-state')) {
+            historyList.querySelector('.empty-state p').textContent = translations[lang].noResults;
+        }
     }
 
     // Dil seçimi değiştiğinde
@@ -386,37 +393,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultItems = JSON.parse(localStorage.getItem('resultList') || '[]');
         const startNumber = parseInt(startNum.value) || 1;
         const currentSort = localStorage.getItem('sortOrder') || 'desc';
-        
-        // Sıralama için geçici dizi oluştur
-        let sortedHistory = [...history];
-        if (currentSort === 'asc') {
-            sortedHistory.reverse();  // Diziyi ters çevir
+
+        if (history.length === 0) {
+            // Boş durum mesajı
+            historyList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-list-ol"></i>
+                    <p>${translations[currentLang].noResults || 'Henüz sonuç yok'}</p>
+                </div>`;
+        } else {
+            // Normal liste görünümü
+            historyList.innerHTML = history
+                .map((num, index) => {
+                    const listIndex = num - startNumber;
+                    const listItem = resultItems[listIndex];
+                    const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
+                    const numberSpan = `<span class="result-number">${num}</span>`;
+                    
+                    // Sıra numarasını doğru hesapla
+                    const displayIndex = currentSort === 'asc' ? 
+                        history.length - index : 
+                        index + 1;
+
+                    // İsim ve numara aynı kalmalı, sadece sıra numarası değişmeli
+                    return `<li>
+                        <div class="left-content">
+                            <span class="index-number">#${displayIndex}</span>
+                            ${nameSpan}
+                        </div>
+                        ${numberSpan}
+                    </li>`;
+                })
+                .join('');
         }
         
-        historyList.innerHTML = sortedHistory
-            .map((num, index) => {
-                const listIndex = num - startNumber;
-                const listItem = resultItems[listIndex];
-                const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
-                const numberSpan = `<span class="result-number">${num}</span>`;
-                
-                // Sıra numarasını doğru hesapla
-                const displayIndex = currentSort === 'asc' ? 
-                    history.length - index : 
-                    index + 1;
-
-                // İsim ve numara aynı kalmalı, sadece sıra numarası değişmeli
-                return `<li>
-                    <div class="left-content">
-                        <span class="index-number">#${displayIndex}</span>
-                        ${nameSpan}
-                    </div>
-                    ${numberSpan}
-                </li>`;
-            })
-            .join('');
-        
         clearHistoryBtn.disabled = history.length === 0;
+        
+        // Yüksekliği güncelle
+        adjustHistoryHeight();
     }
 
     function loadSavedNumbers() {
@@ -467,6 +481,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Son sayı inputuna odaklan
             endNum.focus();
         }
+        
+        // Yüksekliği güncelle
+        adjustHistoryHeight();
     }
 
     clearHistoryBtn.addEventListener('click', () => {
@@ -626,4 +643,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sayfa yüklendiğinde sıralama tercihini yükle
     const savedSort = localStorage.getItem('sortOrder') || 'desc';
     sortOrder.value = savedSort;
+
+    // Sağ sütun yüksekliğini ayarlama fonksiyonu
+    function adjustHistoryHeight() {
+        const lotterySection = document.querySelector('.lottery-section');
+        const historySection = document.querySelector('.history-section');
+        historySection.style.minHeight = `${lotterySection.clientHeight - 60}px`;
+    }
+
+    // Sayfa yüklendiğinde ve pencere boyutu değiştiğinde yüksekliği ayarla
+    window.addEventListener('load', adjustHistoryHeight);
+    window.addEventListener('resize', adjustHistoryHeight);
 }); 
