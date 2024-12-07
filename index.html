@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piyango Uygulaması</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <input type="number" id="startNum" placeholder="Başlangıç sayısı">
+            <input type="number" id="endNum" placeholder="Bitiş sayısı">
+        </div>
+        
+        <div class="balls-container">
+            <div class="ball">
+                <div class="number-strip" id="firstBall"></div>
+            </div>
+            <div class="ball">
+                <div class="number-strip" id="secondBall"></div>
+            </div>
+            <div class="ball">
+                <div class="number-strip" id="thirdBall"></div>
+            </div>
+        </div>
+
+        <button id="pickButton">Sayı Seç</button>
+
+        <div class="history">
+            <h3>Önceki Çekilişler</h3>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
