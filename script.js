@@ -12,7 +12,7 @@ const translations = {
         slow: "Yavaş",
         normal: "Normal",
         fast: "Hızlı",
-        drawEnded: "Çekiliş bitti",
+        drawEnded: "Tebrikler! Çekiliş başarıyla tamamlandı",
         confirmEnd: "Çekilişi bitirmek istediğinizden emin misiniz? Tüm sonuçlar silinecektir.",
         enterValidStart: "Lütfen geçerli bir başlangıç sayısı giriniz!",
         enterValidEnd: "Lütfen geçerli bir bitiş sayısı giriniz!",
@@ -23,15 +23,20 @@ const translations = {
         defaultTitle: "Piyango Çekilişi",
         titleLabel: "Başlık (opsiyonel)",
         titlePlaceholder: "Başlık giriniz",
-        resultListLabel: "İsim Listesi (opsiyonel)",
-        resultListPlaceholder: "İsimleri her satıra bir tane gelecek şekilde yapıştırın...",
         resetSettings: "Tüm Ayarları Sıfırla",
         confirmReset: "Tüm ayarları sıfırlamak istediğinizden emin misiniz?",
         applySettings: "Uygula",
         sortOrder: "Sıralama",
         ascending: "Yeniden Eskiye",
         descending: "Eskiden Yeniye",
-        noResults: "Henüz çekiliş sonucu bulunmuyor"
+        noResults: "Henüz çekiliş sonucu bulunmuyor",
+        namesList: "İsim Listesi",
+        namesListDescription: "İsimleri her satıra bir tane gelecek şekilde yazın...",
+        namesPlaceholder: "İsimleri her satıra bir tane gelecek şekilde yazın...",
+        save: "Kaydet",
+        clearList: "Listeyi Temizle",
+        confirmClear: "Listeyi temizlemek istediğinizden emin misiniz?",
+        editWarning: "Çekiliş başladıktan sonra isim listesini düzenleyemezsiniz, öncelikle çekilişi bitirmeniz gerekiyor."
     },
     en: {
         firstNumber: "First Number",
@@ -45,7 +50,7 @@ const translations = {
         slow: "Slow",
         normal: "Normal",
         fast: "Fast",
-        drawEnded: "Draw ended",
+        drawEnded: "Congratulations! The draw has been successfully completed",
         confirmEnd: "Are you sure you want to end the draw? All results will be deleted.",
         enterValidStart: "Please enter a valid start number!",
         enterValidEnd: "Please enter a valid end number!",
@@ -56,19 +61,25 @@ const translations = {
         defaultTitle: "Lottery Draw",
         titleLabel: "Title (optional)",
         titlePlaceholder: "Enter title",
-        resultListLabel: "Name List (optional)",
-        resultListPlaceholder: "Paste names, one per line...",
         resetSettings: "Reset All Settings",
         confirmReset: "Are you sure you want to reset all settings?",
         applySettings: "Apply",
         sortOrder: "Sort Order",
         ascending: "Newest First",
         descending: "Oldest First",
-        noResults: "No draw results yet"
+        noResults: "No draw results yet",
+        namesList: "Name List",
+        namesListDescription: "Enter names, one per line...",
+        namesPlaceholder: "Enter names, one per line...",
+        save: "Save",
+        clearList: "Clear List",
+        confirmClear: "Are you sure you want to clear the list?",
+        editWarning: "You cannot edit the name list after the draw has started, you need to end the draw first."
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Temel elementleri seç
     const startNum = document.getElementById('startNum');
     const endNum = document.getElementById('endNum');
     const pickButton = document.getElementById('pickButton');
@@ -82,9 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundBtn = document.getElementById('soundBtn');
     const processingSound = document.getElementById('processingSound');
     const resultSound = document.getElementById('resultSound');
-    const resultList = document.getElementById('resultList');
+    const namesBtn = document.getElementById('namesBtn');
+    const namesPopup = document.getElementById('namesPopup');
+    const closeNamesPopup = document.getElementById('closeNamesPopup');
     let isSoundOn = localStorage.getItem('soundEnabled') !== 'false';
-    let usedNumbers = new Set(); // Çıkan sayıları takip etmek için
+    let usedNumbers = new Set();
     const languageSelect = document.getElementById('language');
     let currentLang = localStorage.getItem('language') || 'tr';
     const mainTitle = document.getElementById('mainTitle');
@@ -93,26 +106,153 @@ document.addEventListener('DOMContentLoaded', () => {
     const applySettingsBtn = document.getElementById('applySettings');
     const sortOrder = document.getElementById('sortOrder');
 
+    // Kaydedilmiş sayıları yükle
+    function loadSavedNumbers() {
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        if (history.length > 0) {
+            const savedUsedNumbers = JSON.parse(localStorage.getItem('usedNumbers') || '[]');
+            usedNumbers = new Set(savedUsedNumbers);
+
+            const savedNumbers = JSON.parse(localStorage.getItem('lotteryRange') || '{}');
+            if (savedNumbers.start !== undefined && savedNumbers.end !== undefined) {
+                startNum.value = savedNumbers.start;
+                endNum.value = savedNumbers.end;
+                startNum.disabled = true;
+                endNum.disabled = true;
+                
+                pickButton.textContent = translations[currentLang].pickNewNumber;
+
+                const digitCount = savedNumbers.end.toString().length;
+                ballsContainer.innerHTML = '';
+                for (let i = 0; i < digitCount; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'ball';
+                    ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                    ballsContainer.appendChild(ball);
+                }
+            }
+        } else {
+            startNum.value = '1';
+            endNum.value = '';
+            pickButton.textContent = translations[currentLang].startDraw;
+            
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
+            }
+
+            endNum.focus();
+        }
+        
+        adjustHistoryHeight();
+    }
+
+    // İsim listesi popup'ını oluştur
+    const namesListContent = document.querySelector('.names-list-body');
+    namesListContent.innerHTML = `
+        <div class="setting-item">
+            <label for="namesTextarea">${translations[currentLang].namesListDescription}</label>
+            <textarea id="namesTextarea" placeholder="${translations[currentLang].namesPlaceholder}"></textarea>
+        </div>
+        <div class="names-list-buttons">
+            <button id="saveNames" class="apply-button">${translations[currentLang].save}</button>
+            <button id="clearNames" class="text-button">${translations[currentLang].clearList}</button>
+        </div>
+    `;
+
+    // Sayfa yüklendiğinde başlangıç durumunu ayarla
     loadHistory();
     loadSavedNumbers();
 
-    // Başlığı yükle
-    function loadTitle() {
-        const savedTitle = localStorage.getItem('drawTitle');
-        if (savedTitle) {
-            mainTitle.textContent = savedTitle;
-            titleInput.value = savedTitle;
-        } else {
-            mainTitle.textContent = translations[currentLang].defaultTitle;
-            titleInput.value = translations[currentLang].defaultTitle;
-        }
-    }
+    // İsim listesi elementlerini seç
+    const namesTextarea = document.getElementById('namesTextarea');
+    const saveButton = document.getElementById('saveNames');
+    const clearButton = document.getElementById('clearNames');
 
-    // Başlığı kaydet
-    titleInput.addEventListener('input', () => {
-        const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
-        mainTitle.textContent = newTitle;
-        localStorage.setItem('drawTitle', newTitle);
+    // İsim listesi popup'ını aç
+    namesBtn.addEventListener('click', () => {
+        namesPopup.style.display = 'flex';
+        namesTextarea.value = localStorage.getItem('namesList') || '';
+
+        // Çekiliş durumuna göre butonları ayarla
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        const isDrawActive = history.length > 0;
+        const warningMessage = document.querySelector('.warning-message') || (() => {
+            const warning = document.createElement('div');
+            warning.className = 'warning-message';
+            warning.textContent = translations[currentLang].editWarning;
+            namesTextarea.parentNode.insertBefore(warning, namesTextarea.nextSibling);
+            return warning;
+        })();
+
+        namesTextarea.disabled = isDrawActive;
+        saveButton.disabled = isDrawActive;
+        clearButton.disabled = isDrawActive;
+
+        if (isDrawActive) {
+            namesTextarea.style.opacity = '0.7';
+            saveButton.style.opacity = '0.7';
+            clearButton.style.opacity = '0.7';
+            warningMessage.style.display = 'block';
+        } else {
+            namesTextarea.style.opacity = '1';
+            saveButton.style.opacity = '1';
+            clearButton.style.opacity = '1';
+            warningMessage.style.display = 'none';
+        }
+    });
+
+    // İsim listesi popup'ını kapat
+    closeNamesPopup.addEventListener('click', () => {
+        namesPopup.style.display = 'none';
+    });
+
+    // İsim listesini kaydet
+    saveButton.addEventListener('click', () => {
+        console.log('Save button clicked'); // Debug için
+        const names = namesTextarea.value.split('\n').filter(name => name.trim());
+        localStorage.setItem('namesList', namesTextarea.value);
+        namesPopup.style.display = 'none';
+        
+        if (names.length > 0) {
+            startNum.value = '1';
+            endNum.value = names.length.toString();
+            startNum.disabled = true;
+            endNum.disabled = true;
+        } else {
+            startNum.disabled = false;
+            endNum.disabled = false;
+            startNum.value = '1';
+            endNum.value = '';
+        }
+
+        // Badge'i güncelle
+        updateNamesBadge();
+
+        // Listeyi güncelle
+        loadHistory();
+    });
+
+    // İsim listesini temizle
+    clearButton.addEventListener('click', () => {
+        if (confirm(translations[currentLang].confirmClear)) {
+            namesTextarea.value = '';
+            localStorage.setItem('namesList', '');
+            updateNamesBadge();
+            startNum.disabled = false;
+            endNum.disabled = false;
+            endNum.value = '';
+        }
+    });
+
+    // Popup dışına tıklandığında kapat
+    namesPopup.addEventListener('click', (e) => {
+        if (e.target === namesPopup) {
+            namesPopup.style.display = 'none';
+        }
     });
 
     // Dil değiştirme fonksiyonu
@@ -129,12 +269,25 @@ document.addEventListener('DOMContentLoaded', () => {
         startNum.placeholder = translations[lang].startPlaceholder;
         endNum.placeholder = translations[lang].endPlaceholder;
 
+        // İsim listesi metinlerini güncelle
+        document.querySelector('.names-list-header h3').textContent = translations[lang].namesList;
+        document.querySelector('label[for="namesTextarea"]').textContent = translations[lang].namesListDescription;
+        namesTextarea.placeholder = translations[lang].namesPlaceholder;
+        saveButton.textContent = translations[lang].save;
+        clearButton.textContent = translations[lang].clearList;
+
+        // Uyarı mesajını güncelle
+        const warningMessage = document.querySelector('.warning-message');
+        if (warningMessage) {
+            warningMessage.textContent = translations[lang].editWarning;
+        }
+
         // Hız seçeneklerini güncelle
         const speedOptions = animationSpeed.options;
         speedOptions[0].textContent = translations[lang].slow;
         speedOptions[1].textContent = translations[lang].normal;
         speedOptions[2].textContent = translations[lang].fast;
-
+        
         // Buton metnini güncelle
         if (!document.querySelector('.history-section').querySelector('li')) {
             pickButton.textContent = translations[lang].startDraw;
@@ -160,9 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
             mainTitle.textContent = translations[lang].defaultTitle;
             titleInput.value = translations[lang].defaultTitle;
         }
-
-        document.querySelector('label[for="resultList"]').textContent = translations[lang].resultListLabel;
-        resultList.placeholder = translations[lang].resultListPlaceholder;
 
         resetSettingsBtn.textContent = translations[lang].resetSettings;
         applySettingsBtn.textContent = translations[lang].applySettings;
@@ -235,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Input'ları devre dışı bırak
         startNum.disabled = true;
         endNum.disabled = true;
-        resultList.disabled = true;
+        namesTextarea.disabled = true;
         
         // Mevcut topları temizle
         ballsContainer.innerHTML = '';
@@ -268,12 +418,13 @@ document.addEventListener('DOMContentLoaded', () => {
             pickButton.disabled = true;
             
             // Çekiliş bitti mesajı
-            const message = document.createElement('div');
-            message.textContent = 'Çekiliş bitti';
+            const message = document.createElement('span');
             message.style.marginTop = '10px';
-            message.style.color = '#666';
-            message.style.fontSize = '14px';
-            pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
+            message.style.color = '#198754';
+            message.textContent = translations[currentLang].drawEnded;
+            if (!pickButton.nextSibling || pickButton.nextSibling.nodeName !== 'SPAN') {
+                pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
+            }
             
             return;
         }
@@ -293,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index >= digits) {
                 saveResult(randomNumber);
                 pickButton.disabled = false;
-                // Sonuç sesini çal
+                // Sonuç sesini ��al
                 if (isSoundOn) {
                     resultSound.currentTime = 0;
                     resultSound.play();
@@ -390,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadHistory() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
-        const resultItems = JSON.parse(localStorage.getItem('resultList') || '[]');
+        const namesList = localStorage.getItem('namesList') || '';
+        const names = namesList.split('\n').filter(name => name.trim());
         const startNumber = parseInt(startNum.value) || 1;
         const currentSort = localStorage.getItem('sortOrder') || 'desc';
 
@@ -399,23 +551,21 @@ document.addEventListener('DOMContentLoaded', () => {
             historyList.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-list-ol"></i>
-                    <p>${translations[currentLang].noResults || 'Henüz sonuç yok'}</p>
+                    <p>${translations[currentLang].noResults}</p>
                 </div>`;
         } else {
             // Normal liste görünümü
             historyList.innerHTML = history
                 .map((num, index) => {
                     const listIndex = num - startNumber;
-                    const listItem = resultItems[listIndex];
+                    const listItem = names[listIndex];
                     const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
                     const numberSpan = `<span class="result-number">${num}</span>`;
                     
-                    // Sıra numarasını doğru hesapla
                     const displayIndex = currentSort === 'asc' ? 
                         history.length - index : 
                         index + 1;
 
-                    // İsim ve numara aynı kalmalı, sadece sıra numarası değişmeli
                     return `<li>
                         <div class="left-content">
                             <span class="index-number">#${displayIndex}</span>
@@ -428,64 +578,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         clearHistoryBtn.disabled = history.length === 0;
-        
-        // Yüksekliği güncelle
         adjustHistoryHeight();
     }
 
-    function loadSavedNumbers() {
-        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
-        if (history.length > 0) {
-            // Kullanılmış sayıları ykle
-            const savedUsedNumbers = JSON.parse(localStorage.getItem('usedNumbers') || '[]');
-            usedNumbers = new Set(savedUsedNumbers);
-
-            const savedNumbers = JSON.parse(localStorage.getItem('lotteryRange') || '{}');
-            if (savedNumbers.start !== undefined && savedNumbers.end !== undefined) {
-                startNum.value = savedNumbers.start;
-                endNum.value = savedNumbers.end;
-                startNum.disabled = true;
-                endNum.disabled = true;
-                resultList.disabled = true;
-                
-                // Çekiliş başladysa buton yazısını değiştir
-                pickButton.textContent = translations[currentLang].pickNewNumber;
-
-                // Maksimum sayın basamak sayısına göre top oluştur
-                const digitCount = savedNumbers.end.toString().length;
-                ballsContainer.innerHTML = '';
-                for (let i = 0; i < digitCount; i++) {
-                    const ball = document.createElement('div');
-                    ball.className = 'ball';
-                    ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
-                    ballsContainer.appendChild(ball);
-                }
-            }
-        } else {
-            // Geçmiş yoksa başlangıç sayısını 1 yap
-            startNum.value = '1';
-            endNum.value = '';
-            // Çekiliş başlamadıysa buton yazısını değiştir
-            pickButton.textContent = translations[currentLang].startDraw;
-            
-            // Geçmiş yoksa 3 top göster
-            ballsContainer.innerHTML = '';
-            for (let i = 0; i < 3; i++) {
-                const ball = document.createElement('div');
-                ball.className = 'ball';
-                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
-                ballsContainer.appendChild(ball);
-            }
-            resultList.disabled = false;
-
-            // Son sayı inputuna odaklan
-            endNum.focus();
-        }
-        
-        // Yüksekliği güncelle
-        adjustHistoryHeight();
-    }
-
+    // Çekilişi bitir
     clearHistoryBtn.addEventListener('click', () => {
         if (confirm(translations[currentLang].confirmEnd)) {
             localStorage.removeItem('lotteryHistory');
@@ -494,24 +590,34 @@ document.addEventListener('DOMContentLoaded', () => {
             loadHistory();
             
             // Input'ları aktif et
-            startNum.disabled = false;
-            endNum.disabled = false;
-            resultList.disabled = false;
+            namesTextarea.disabled = false;
+            namesTextarea.style.opacity = '1';
+            saveButton.disabled = false;
+            saveButton.style.opacity = '1';
+            clearButton.disabled = false;
+            clearButton.style.opacity = '1';
+            
+            const warningMessage = document.querySelector('.warning-message');
+            if (warningMessage) {
+                warningMessage.style.display = 'none';
+            }
 
             // İsim listesine göre sayıları ayarla
-            const items = resultList.value.split('\n').filter(item => item.trim());
-            if (items.length > 0) {
+            const names = namesTextarea.value.split('\n').filter(name => name.trim());
+            if (names.length > 0) {
                 startNum.value = '1';
-                endNum.value = items.length.toString();
+                endNum.value = names.length.toString();
+                startNum.disabled = true;
+                endNum.disabled = true;
             } else {
+                startNum.disabled = false;
+                endNum.disabled = false;
                 startNum.value = '1';
                 endNum.value = '';
             }
             
-            // Buton yazısını değiştir
             pickButton.textContent = translations[currentLang].startDraw;
             
-            // Topları temizle ve 3 boş top ekle
             ballsContainer.innerHTML = '';
             for (let i = 0; i < 3; i++) {
                 const ball = document.createElement('div');
@@ -520,12 +626,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ballsContainer.appendChild(ball);
             }
             
-            // Sayı seç butonunu aktif et
             pickButton.disabled = false;
             
-            // Çekiliş bitti mesajını kaldır
             const message = pickButton.nextSibling;
-            if (message && message.textContent === 'Çekiliş bitti') {
+            if (message && message.textContent === translations[currentLang].drawEnded) {
                 message.remove();
             }
         }
@@ -552,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('animationSpeed', animationSpeed.value);
     });
 
-    // Kayıtlı hızı yükle
+    // Kaytlı hızı yükle
     const savedSpeed = localStorage.getItem('animationSpeed');
     if (savedSpeed) {
         animationSpeed.value = savedSpeed;
@@ -578,31 +682,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Sayfa yüklendiğinde başlığı yükle
-    loadTitle();
-
-    // Liste değiştiğinde kaydet
-    resultList.addEventListener('change', () => {
-        const items = resultList.value.split('\n').filter(item => item.trim());
-        localStorage.setItem('resultList', JSON.stringify(items));
-
-        // Çekiliş başlamamışsa (inputlar disabled değilse)
-        if (!startNum.disabled && !endNum.disabled) {
-            // İlk sayıyı 1 yap
-            startNum.value = '1';
-            // Son sayıyı liste uzunluğuna eşitle
-            endNum.value = items.length.toString();
+    // Başlığı yükle
+    function loadTitle() {
+        const savedTitle = localStorage.getItem('drawTitle');
+        if (savedTitle) {
+            mainTitle.textContent = savedTitle;
+            titleInput.value = savedTitle;
+        } else {
+            mainTitle.textContent = translations[currentLang].defaultTitle;
+            titleInput.value = translations[currentLang].defaultTitle;
         }
-    });
-
-    // Kaydedilmiş listeyi yükle
-    function loadResultList() {
-        const savedList = JSON.parse(localStorage.getItem('resultList') || '[]');
-        resultList.value = savedList.join('\n');
     }
 
-    // Sayfa yüklendiğinde listeyi de yükle
-    loadResultList();
+    // Başlığı kaydet
+    titleInput.addEventListener('input', () => {
+        const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
+        mainTitle.textContent = newTitle;
+        localStorage.setItem('drawTitle', newTitle);
+    });
+
+    // Sayfa yüklendiğinde başlığı yükle
+    loadTitle();
 
     // Ayarları sıfırlama fonksiyonu
     resetSettingsBtn.addEventListener('click', () => {
@@ -611,14 +711,10 @@ document.addEventListener('DOMContentLoaded', () => {
             animationSpeed.value = '2';
             localStorage.setItem('animationSpeed', '2');
 
-            // Title'ı default'a getir
+            // Title' default'a getir
             localStorage.removeItem('drawTitle');
             mainTitle.textContent = translations[currentLang].defaultTitle;
             titleInput.value = translations[currentLang].defaultTitle;
-
-            // İsim listesini temizle
-            localStorage.removeItem('resultList');
-            resultList.value = '';
 
             // Sıralama ayarını varsayılana getir (desc)
             sortOrder.value = 'desc';
@@ -654,4 +750,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sayfa yüklendiğinde ve pencere boyutu değiştiğinde yüksekliği ayarla
     window.addEventListener('load', adjustHistoryHeight);
     window.addEventListener('resize', adjustHistoryHeight);
+
+    // İsim sayısı badge'ini güncelle
+    function updateNamesBadge() {
+        const names = (localStorage.getItem('namesList') || '').split('\n').filter(name => name.trim());
+        let badge = document.querySelector('.names-badge');
+        
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'names-badge';
+            namesBtn.appendChild(badge);
+        }
+        
+        badge.textContent = names.length;
+    }
+
+    // Sayfa yüklendiğinde badge'i güncelle
+    updateNamesBadge();
+
+    // Çekiliş bittiğinde
+    function endDraw() {
+        pickButton.disabled = true;
+        const message = document.createElement('span');
+        message.style.marginLeft = '20px';
+        message.style.color = '#198754';
+        message.style.fontWeight = '500';
+        message.style.display = 'inline-block';
+        message.style.marginTop = '10px';
+        message.textContent = translations[currentLang].drawEnded;
+        if (!pickButton.nextSibling || pickButton.nextSibling.nodeName !== 'SPAN') {
+            pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
+        }
+    }
 }); 

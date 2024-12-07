@@ -19,8 +19,13 @@
                 <div class="sound-icon" id="soundBtn">
                     <i class="fas fa-volume-up"></i>
                 </div>
-                <div class="settings-icon" id="settingsBtn">
-                    <i class="fas fa-cog"></i>
+                <div class="control-icons-right">
+                    <div class="names-icon" id="namesBtn">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="settings-icon" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </div>
                 </div>
             </div>
             <div class="input-section">
@@ -85,12 +90,28 @@
                     </select>
                 </div>
                 <div class="setting-item">
-                    <label for="resultList">Sonuç Listesi (Her satıra bir öğe)</label>
-                    <textarea id="resultList" placeholder="Liste öğelerini buraya yapıştırın..."></textarea>
-                </div>
-                <div class="setting-item">
                     <button id="applySettings" class="apply-button">Uygula</button>
                     <button id="resetSettings" class="text-button">Tüm Ayarları Sıfırla</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İsim Listesi Popup -->
+    <div class="names-list-popup" id="namesPopup">
+        <div class="names-list-content">
+            <div class="names-list-header">
+                <h3>İsim Listesi</h3>
+                <span class="close-popup" id="closeNamesPopup">&times;</span>
+            </div>
+            <div class="names-list-body">
+                <div class="setting-item">
+                    <label for="namesTextarea">İsim Listesi</label>
+                    <textarea id="namesTextarea" placeholder="İsimleri her satıra bir tane gelecek şekilde yazın..."></textarea>
+                </div>
+                <div class="names-list-buttons">
+                    <button id="saveNames" class="apply-button">Kaydet</button>
+                    <button id="clearNames" class="text-button">Listeyi Temizle</button>
                 </div>
             </div>
         </div>
