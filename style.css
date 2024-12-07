@@ -403,4 +403,30 @@ input[type="number"] {
         padding-top: 20px;  /* Üstten padding'i azalt */
     }
 }
+
+@keyframes highlightRow {
+    0% {
+        background-color: rgba(76, 175, 80, 0.2);  /* Hafif yeşil */
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.highlight-animation {
+    animation: highlightRow 4s ease-out;
+}
+
+@keyframes highlightBall {
+    0% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);  /* Hafif yeşil glow efekti */
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  /* Normal haline dön */
+    }
+}
+
+.highlight-ball-animation {
+    animation: highlightBall 3s ease-out;
+}
  

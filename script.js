@@ -290,6 +290,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     resultSound.currentTime = 0;
                     resultSound.play();
                 }
+
+                // Tüm topları highlight et
+                const allBalls = document.querySelectorAll('.ball');
+                allBalls.forEach(ball => {
+                    ball.classList.add('highlight-ball-animation');
+                    setTimeout(() => {
+                        ball.classList.remove('highlight-ball-animation');
+                    }, 2000);
+                });
+
                 return;
             }
 
@@ -355,6 +365,19 @@ document.addEventListener('DOMContentLoaded', () => {
         clearHistoryBtn.disabled = false;
         
         loadHistory();
+
+        // Son eklenen satırı bul ve highlight animasyonunu uygula
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
+        const historyItems = historyList.querySelectorAll('li');
+        // desc modunda ilk öğe, asc modunda son öğe highlight edilmeli
+        const targetItem = currentSort === 'asc' ? historyItems[0] : historyItems[historyItems.length - 1];
+        
+        if (targetItem) {
+            targetItem.classList.add('highlight-animation');
+            setTimeout(() => {
+                targetItem.classList.remove('highlight-animation');
+            }, 2000);
+        }
     }
 
     function loadHistory() {
@@ -408,10 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 endNum.value = savedNumbers.end;
                 startNum.disabled = true;
                 endNum.disabled = true;
-                // Çekiliş başladıysa buton yazısını değiştir
+                // Çekiliş başladysa buton yazısını değiştir
                 pickButton.textContent = translations[currentLang].pickNewNumber;
 
-                // Maksimum sayının basamak sayısına göre top oluştur
+                // Maksimum sayın basamak sayısına göre top oluştur
                 const digitCount = savedNumbers.end.toString().length;
                 ballsContainer.innerHTML = '';
                 for (let i = 0; i < digitCount; i++) {
@@ -467,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sayı seç butonunu aktif et
             pickButton.disabled = false;
             
-            // Çekiliş bitti mesajını kaldır
+            // Çekili�� bitti mesajını kaldır
             const message = pickButton.nextSibling;
             if (message && message.textContent === 'Çekiliş bitti') {
                 message.remove();
@@ -529,6 +552,14 @@ document.addEventListener('DOMContentLoaded', () => {
     resultList.addEventListener('change', () => {
         const items = resultList.value.split('\n').filter(item => item.trim());
         localStorage.setItem('resultList', JSON.stringify(items));
+
+        // Çekiliş başlamamışsa (inputlar disabled değilse)
+        if (!startNum.disabled && !endNum.disabled) {
+            // İlk sayıyı 1 yap
+            startNum.value = '1';
+            // Son sayıyı liste uzunluğuna eşitle
+            endNum.value = items.length.toString();
+        }
     });
 
     // Kaydedilmiş listeyi yükle
