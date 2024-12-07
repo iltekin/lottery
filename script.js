@@ -204,14 +204,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('saveNames');
     const clearButton = document.getElementById('clearNames');
 
-    // İsim listesi popup'ını aç
+    // İsim listesi içeriğini düzenleyen fonksiyon
+    function updateNamesTextarea(isDrawActive) {
+        const namesTextarea = document.getElementById('namesTextarea');
+        const names = (localStorage.getItem('namesList') || '').split('\n').filter(name => name.trim());
+        
+        if (isDrawActive && names.length > 0) {
+            // Çekiliş aktifken sıra numaralı göster
+            namesTextarea.value = names
+                .map((name, index) => `${index + 1}. ${name}`)
+                .join('\n');
+        } else {
+            // Normal halde sıra numarasız göster
+            namesTextarea.value = names.join('\n');
+        }
+    }
+
+    // namesBtn click event'inde güncelle
     namesBtn.addEventListener('click', () => {
         namesPopup.style.display = 'flex';
-        namesTextarea.value = localStorage.getItem('namesList') || '';
-
-        // Çekiliş durumuna göre butonları ayarla
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
         const isDrawActive = history.length > 0;
+        
+        updateNamesTextarea(isDrawActive);
+
+        // Çekiliş durumuna göre butonları ayarla
         const warningMessage = document.querySelector('.warning-message') || (() => {
             const warning = document.createElement('div');
             warning.className = 'warning-message';
@@ -244,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // İsim listesini kaydet
     saveButton.addEventListener('click', () => {
-        console.log('Save button clicked'); // Debug için
         const names = namesTextarea.value.split('\n').filter(name => name.trim());
         localStorage.setItem('namesList', namesTextarea.value);
         namesPopup.style.display = 'none';
@@ -340,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
         titleInput.placeholder = translations[lang].titlePlaceholder;
 
-        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
+        // Eğer varsayılan başlık kullan��lıyorsa, yeni dildeki başlığı göster
         const savedTitle = localStorage.getItem('drawTitle');
         if (!savedTitle) {
             mainTitle.textContent = translations[lang].defaultTitle;
@@ -491,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const digits = max.toString().length;
         
-        // Seçilen sayıyı basamaklarına ay��r
+        // Seçilen sayıyı basamaklarına ayır
         const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
         let currentIndex = 0;
 
@@ -733,6 +749,9 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('lotteryRange');
             usedNumbers.clear();
             loadHistory();
+            
+            // İsim listesi textarea'sını güncelle
+            updateNamesTextarea(false);
             
             // Input'ları aktif et
             namesTextarea.disabled = false;
