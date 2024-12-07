@@ -1,7 +1,7 @@
 body {
     margin: 0;
     background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
+    font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     padding-top: 30px;
 }
@@ -142,17 +142,37 @@ button:hover {
     padding: 10px;
     border-bottom: 1px solid #f0f0f0;
     font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-#historyList li::before {
-    content: attr(data-number);
+.left-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.index-number {
     color: #999;
-    margin-right: 15px;
     font-size: 14px;
 }
 
-#historyList li:last-child {
-    border-bottom: none;
+#historyList li span.result-name {
+    font-weight: bold;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+#historyList li::before {
+    content: none;
+}
+
+/* Sonuç listesindeki sayılar için */
+#historyList li span.result-number {
+    font-weight: bold;
+    font-size: inherit;
 }
 
 .history-header {
@@ -276,12 +296,11 @@ input[type="number"] {
 }
 
 .control-icons {
-    position: absolute;
-    top: 20px;
-    left: 20px;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .sound-icon, .settings-icon {
@@ -311,7 +330,77 @@ input[type="number"] {
 .main-title {
     text-align: center;
     color: #333;
-    margin: 0 0 30px 0;
     font-size: 32px;
+}
+
+.setting-item textarea {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.reset-button {
+    background-color: #6c757d;  /* Gri tonu */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.reset-button:hover {
+    background-color: #5a6268;
+}
+
+.text-button {
+    background: none;
+    border: none;
+    color: #dc3545;
+    padding: 10px 0;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    transition: all 0.3s;
+}
+
+.text-button:hover {
+    color: #f0f0f0;
+    background-color: #dc3545;
+}
+
+.apply-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    font-size: 14px;
+}
+
+.apply-button:hover {
+    background-color: #45a049;
+}
+
+/* Mobil görünüm için yeni stiller */
+@media (max-width: 768px) {
+
+    .lottery-section {
+        padding-top: 20px;  /* Üstten padding'i azalt */
+    }
 }
  

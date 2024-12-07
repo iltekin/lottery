@@ -22,7 +22,12 @@ const translations = {
         endPlaceholder: "Bitiş sayısı",
         defaultTitle: "Piyango Çekilişi",
         titleLabel: "Başlık (opsiyonel)",
-        titlePlaceholder: "Başlık giriniz"
+        titlePlaceholder: "Başlık giriniz",
+        resultListLabel: "İsim Listesi (opsiyonel)",
+        resultListPlaceholder: "İsimleri her satıra bir tane gelecek şekilde yapıştırın...",
+        resetSettings: "Tüm Ayarları Sıfırla",
+        confirmReset: "Tüm ayarları sıfırlamak istediğinizden emin misiniz?",
+        applySettings: "Uygula"
     },
     en: {
         firstNumber: "First Number",
@@ -46,7 +51,12 @@ const translations = {
         endPlaceholder: "End number",
         defaultTitle: "Lottery Draw",
         titleLabel: "Title (optional)",
-        titlePlaceholder: "Enter title"
+        titlePlaceholder: "Enter title",
+        resultListLabel: "Name List (optional)",
+        resultListPlaceholder: "Paste names, one per line...",
+        resetSettings: "Reset All Settings",
+        confirmReset: "Are you sure you want to reset all settings?",
+        applySettings: "Apply"
     }
 };
 
@@ -65,12 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectSound = document.getElementById('selectSound');
     const processingSound = document.getElementById('processingSound');
     const resultSound = document.getElementById('resultSound');
+    const resultList = document.getElementById('resultList');
     let isSoundOn = localStorage.getItem('soundEnabled') !== 'false';
     let usedNumbers = new Set(); // Çıkan sayıları takip etmek için
     const languageSelect = document.getElementById('language');
     let currentLang = localStorage.getItem('language') || 'tr';
     const mainTitle = document.getElementById('mainTitle');
     const titleInput = document.getElementById('titleInput');
+    const resetSettingsBtn = document.getElementById('resetSettings');
+    const applySettingsBtn = document.getElementById('applySettings');
 
     loadHistory();
     loadSavedNumbers();
@@ -139,6 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
             mainTitle.textContent = translations[lang].defaultTitle;
             titleInput.value = translations[lang].defaultTitle;
         }
+
+        document.querySelector('label[for="resultList"]').textContent = translations[lang].resultListLabel;
+        resultList.placeholder = translations[lang].resultListPlaceholder;
+
+        resetSettingsBtn.textContent = translations[lang].resetSettings;
+        applySettingsBtn.textContent = translations[lang].applySettings;
     }
 
     // Dil seçimi değiştiğinde
@@ -295,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ball.innerHTML = '';
             ball.appendChild(strip);
 
-            // Her rakam için processing sesini çal
+            // Her rakam için processing sesini ��al
             if (isSoundOn) {
                 processingSound.currentTime = 0;
                 processingSound.play();
@@ -341,11 +360,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadHistory() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        const resultItems = JSON.parse(localStorage.getItem('resultList') || '[]');
+        const startNumber = parseInt(startNum.value) || 1;
+        
         historyList.innerHTML = history
-            .map((num, index) => `<li data-number="#${index + 1}">${num}</li>`)
+            .map((num, index) => {
+                const listIndex = num - startNumber;
+                const listItem = resultItems[listIndex];
+                const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
+                const numberSpan = `<span class="result-number">${num}</span>`;
+                
+                return `<li>
+                    <div class="left-content">
+                        <span class="index-number">#${index + 1}</span>
+                        ${nameSpan}
+                    </div>
+                    ${numberSpan}
+                </li>`;
+            })
             .join('');
         
-        // Geçmiş yoksa butonu devre dışı bırak
         clearHistoryBtn.disabled = history.length === 0;
     }
 
@@ -398,12 +432,12 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('lotteryHistory');
             localStorage.removeItem('lotteryRange');
             usedNumbers.clear();
-            loadHistory(); // Bu çağrı butonu otomatik olarak devre dışı bırakacak
+            loadHistory();
             
             // Input'ları aktif et ve temizle
             startNum.disabled = false;
             endNum.disabled = false;
-            startNum.value = '1';  // Başlangıç değeri 1 olsun
+            startNum.value = '1';
             endNum.value = '';
             
             // Buton yazısını değiştir
@@ -478,4 +512,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Sayfa yüklendiğinde başlığı yükle
     loadTitle();
+
+    // Liste değiştiğinde kaydet
+    resultList.addEventListener('change', () => {
+        const items = resultList.value.split('\n').filter(item => item.trim());
+        localStorage.setItem('resultList', JSON.stringify(items));
+    });
+
+    // Kaydedilmiş listeyi yükle
+    function loadResultList() {
+        const savedList = JSON.parse(localStorage.getItem('resultList') || '[]');
+        resultList.value = savedList.join('\n');
+    }
+
+    // Sayfa yüklendiğinde listeyi de yükle
+    loadResultList();
+
+    // Ayarları sıfırlama fonksiyonu
+    resetSettingsBtn.addEventListener('click', () => {
+        if (confirm(translations[currentLang].confirmReset)) {
+            // Hızı normale getir
+            animationSpeed.value = '2';
+            localStorage.setItem('animationSpeed', '2');
+
+            // Title'ı default'a getir
+            localStorage.removeItem('drawTitle');
+            mainTitle.textContent = translations[currentLang].defaultTitle;
+            titleInput.value = translations[currentLang].defaultTitle;
+
+            // İsim listesini temizle
+            localStorage.removeItem('resultList');
+            resultList.value = '';
+
+            // Listeyi güncelle
+            loadHistory();
+        }
+    });
+
+    // Uygula butonu için event listener
+    applySettingsBtn.addEventListener('click', () => {
+        settingsPopup.style.display = 'none';  // Sadece popup'ı kapat
+    });
 }); 
