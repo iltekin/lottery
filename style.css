@@ -340,8 +340,28 @@ input[type="number"] {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 50px;
     width: 100%;
+}
+
+.control-icons > div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.control-icons > div:first-child {
+    justify-content: flex-start;
+}
+
+.control-icons > div:nth-child(2) {
+    justify-content: center;
+}
+
+.control-icons > div:last-child {
+    justify-content: flex-end;
 }
 
 .sound-icon, .settings-icon {
@@ -738,30 +758,21 @@ input::-ms-input-placeholder {
     background-color: #999;
 }
 
-.control-icons {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
 .control-icons-right {
     display: flex;
     flex-direction: row;
     gap: 15px;
 }
 
-.names-list-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.names-list-buttons .text-button {
-    margin: 0;
+/* Mobil görünüm için */
+@media (max-width: 768px) {
+    .control-icons {
+        gap: 10px;
+    }
+    
+    .control-icons > div:nth-child(2) {
+        flex: 2;  /* Orta kısım mobilde biraz daha geniş olsun */
+    }
 }
 
 .warning-message {
@@ -995,6 +1006,57 @@ input::-ms-input-placeholder {
 
     .setting-item input[type="text"]::placeholder {
         font-size: 16px;
+    }
+}
+
+/* Modern select stili */
+.draw-type-select {
+    padding: 8px 32px 8px 16px;
+    font-size: 14px;
+    font-weight: 900;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 180px;
+    transition: all 0.2s ease;
+    
+    /* Özel dropdown ikonu */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.draw-type-select:hover {
+    border-color: #4CAF50;
+    background-color: #f8f9fa;
+}
+
+.draw-type-select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.draw-type-select option {
+    padding: 8px;
+    font-size: 14px;
+    background-color: white;
+    color: #495057;
+}
+
+/* Mobil görünüm için */
+@media (max-width: 768px) {
+    .draw-type-select {
+        min-width: 150px;
+        font-size: 13px;
+        padding: 6px 28px 6px 12px;
+        background-size: 14px;
+        background-position: right 8px center;
     }
 }
  
