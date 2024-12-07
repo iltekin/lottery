@@ -3,6 +3,7 @@ body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     min-height: 100vh;
+    padding-top: 30px;
 }
 
 .main-container {
@@ -244,22 +245,34 @@ input[type="number"] {
     color: #333;
 }
 
+.popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .setting-item {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 5px 0;
 }
 
 .setting-item label {
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: #888;
+    font-size: 13px;
 }
 
+.setting-item input[type="text"],
 .setting-item select {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
 }
 
 .control-icons {
@@ -293,4 +306,12 @@ input[type="number"] {
 
 .sound-icon.muted i::before {
     content: "\f6a9";
-} 
+}
+
+.main-title {
+    text-align: center;
+    color: #333;
+    margin: 0 0 30px 0;
+    font-size: 32px;
+}
+ 

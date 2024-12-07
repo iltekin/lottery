@@ -17,7 +17,12 @@ const translations = {
         enterValidStart: "Lütfen geçerli bir başlangıç sayısı giriniz!",
         enterValidEnd: "Lütfen geçerli bir bitiş sayısı giriniz!",
         startGreaterThanEnd: "Başlangıç sayısı, bitiş sayısından büyük olamaz!",
-        endLessThanStart: "Bitiş sayısı, başlangıç sayısından küçük olamaz!"
+        endLessThanStart: "Bitiş sayısı, başlangıç sayısından küçük olamaz!",
+        startPlaceholder: "Başlangıç sayısı",
+        endPlaceholder: "Bitiş sayısı",
+        defaultTitle: "Piyango Çekilişi",
+        titleLabel: "Başlık (opsiyonel)",
+        titlePlaceholder: "Başlık giriniz"
     },
     en: {
         firstNumber: "First Number",
@@ -36,7 +41,12 @@ const translations = {
         enterValidStart: "Please enter a valid start number!",
         enterValidEnd: "Please enter a valid end number!",
         startGreaterThanEnd: "Start number cannot be greater than end number!",
-        endLessThanStart: "End number cannot be less than start number!"
+        endLessThanStart: "End number cannot be less than start number!",
+        startPlaceholder: "Start number",
+        endPlaceholder: "End number",
+        defaultTitle: "Lottery Draw",
+        titleLabel: "Title (optional)",
+        titlePlaceholder: "Enter title"
     }
 };
 
@@ -59,9 +69,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let usedNumbers = new Set(); // Çıkan sayıları takip etmek için
     const languageSelect = document.getElementById('language');
     let currentLang = localStorage.getItem('language') || 'tr';
+    const mainTitle = document.getElementById('mainTitle');
+    const titleInput = document.getElementById('titleInput');
 
     loadHistory();
     loadSavedNumbers();
+
+    // Başlığı yükle
+    function loadTitle() {
+        const savedTitle = localStorage.getItem('drawTitle');
+        if (savedTitle) {
+            mainTitle.textContent = savedTitle;
+            titleInput.value = savedTitle;
+        } else {
+            mainTitle.textContent = translations[currentLang].defaultTitle;
+            titleInput.value = translations[currentLang].defaultTitle;
+        }
+    }
+
+    // Başlığı kaydet
+    titleInput.addEventListener('input', () => {
+        const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
+        mainTitle.textContent = newTitle;
+        localStorage.setItem('drawTitle', newTitle);
+    });
 
     // Dil değiştirme fonksiyonu
     function updateLanguage(lang) {
@@ -73,6 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
         clearHistoryBtn.textContent = translations[lang].endDraw;
         document.querySelector('.popup-header h3').textContent = translations[lang].settings;
         
+        // Input placeholder'larını güncelle
+        startNum.placeholder = translations[lang].startPlaceholder;
+        endNum.placeholder = translations[lang].endPlaceholder;
+
         // Hız seçeneklerini güncelle
         const speedOptions = animationSpeed.options;
         speedOptions[0].textContent = translations[lang].slow;
@@ -80,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         speedOptions[2].textContent = translations[lang].fast;
 
         // Buton metnini güncelle
-        if (pickButton.textContent === 'Çekilişi Başlat' || pickButton.textContent === 'Start Draw') {
+        if (!document.querySelector('.history-section').querySelector('li')) {
             pickButton.textContent = translations[lang].startDraw;
         } else {
             pickButton.textContent = translations[lang].pickNewNumber;
@@ -93,6 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         localStorage.setItem('language', lang);
+
+        // Başlık input placeholder'ını güncelle
+        document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
+        titleInput.placeholder = translations[lang].titlePlaceholder;
+
+        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
+        const savedTitle = localStorage.getItem('drawTitle');
+        if (!savedTitle) {
+            mainTitle.textContent = translations[lang].defaultTitle;
+            titleInput.value = translations[lang].defaultTitle;
+        }
     }
 
     // Dil seçimi değiştiğinde
@@ -142,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // İlk tıklamada buton yazısını değiştir
-        pickButton.textContent = 'Yeni Sayı Çek';
+        pickButton.textContent = translations[currentLang].pickNewNumber;
 
         // Aralığı kaydet
         localStorage.setItem('lotteryRange', JSON.stringify({
@@ -287,6 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Kullanılmış sayıları da kaydet
         localStorage.setItem('usedNumbers', JSON.stringify([...usedNumbers]));
         
+        // Geçmiş eklendiğinde butonu aktif et
+        clearHistoryBtn.disabled = false;
+        
         loadHistory();
     }
 
@@ -295,6 +344,9 @@ document.addEventListener('DOMContentLoaded', () => {
         historyList.innerHTML = history
             .map((num, index) => `<li data-number="#${index + 1}">${num}</li>`)
             .join('');
+        
+        // Geçmiş yoksa butonu devre dışı bırak
+        clearHistoryBtn.disabled = history.length === 0;
     }
 
     function loadSavedNumbers() {
@@ -311,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startNum.disabled = true;
                 endNum.disabled = true;
                 // Çekiliş başladıysa buton yazısını değiştir
-                pickButton.textContent = 'Yeni Sayı Çek';
+                pickButton.textContent = translations[currentLang].pickNewNumber;
 
                 // Maksimum sayının basamak sayısına göre top oluştur
                 const digitCount = savedNumbers.end.toString().length;
@@ -328,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startNum.value = '1';
             endNum.value = '';
             // Çekiliş başlamadıysa buton yazısını değiştir
-            pickButton.textContent = 'Çekilişi Başlat';
+            pickButton.textContent = translations[currentLang].startDraw;
             
             // Geçmiş yoksa 3 top göster
             ballsContainer.innerHTML = '';
@@ -345,8 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm(translations[currentLang].confirmEnd)) {
             localStorage.removeItem('lotteryHistory');
             localStorage.removeItem('lotteryRange');
-            usedNumbers.clear(); // Kullanılmış sayıları temizle
-            loadHistory();
+            usedNumbers.clear();
+            loadHistory(); // Bu çağrı butonu otomatik olarak devre dışı bırakacak
             
             // Input'ları aktif et ve temizle
             startNum.disabled = false;
@@ -355,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
             endNum.value = '';
             
             // Buton yazısını değiştir
-            pickButton.textContent = 'Çekilişi Başlat';
+            pickButton.textContent = translations[currentLang].startDraw;
             
             // Topları temizle ve 3 boş top ekle
             ballsContainer.innerHTML = '';
@@ -423,4 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             soundBtn.querySelector('i').className = 'fas fa-volume-mute';
         }
     }
+
+    // Sayfa yüklendiğinde başlığı yükle
+    loadTitle();
 }); 
