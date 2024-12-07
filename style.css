@@ -703,7 +703,7 @@ input::-ms-input-placeholder {
 }
 
 .save-results-container {
-    position: sticky;
+    position: static;
     bottom: 0;
     left: 0;
     width: 100%;
