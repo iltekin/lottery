@@ -5,34 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Piyango Uygulaması</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="input-section">
-            <input type="number" id="startNum" placeholder="Başlangıç sayısı">
-            <input type="number" id="endNum" placeholder="Bitiş sayısı">
-        </div>
-        
-        <div class="balls-container">
-            <div class="ball">
-                <div class="number-strip" id="firstBall"></div>
+    <div class="main-container">
+        <div class="lottery-section">
+            <div class="control-icons">
+                <div class="sound-icon" id="soundBtn">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <div class="settings-icon" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </div>
             </div>
-            <div class="ball">
-                <div class="number-strip" id="secondBall"></div>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="startNum">İlk Sayı</label>
+                    <input type="number" id="startNum" placeholder="Başlangıç sayısı" value="1">
+                </div>
+                <div class="input-group">
+                    <label for="endNum">Son Sayı</label>
+                    <input type="number" id="endNum" placeholder="Bitiş sayısı">
+                </div>
             </div>
-            <div class="ball">
-                <div class="number-strip" id="thirdBall"></div>
+            
+            <div class="balls-container">
+                <!-- Toplar dinamik olarak eklenecek -->
             </div>
+
+            <button id="pickButton">Çekilişi Başlat</button>
         </div>
 
-        <button id="pickButton">Sayı Seç</button>
-
-        <div class="history">
-            <h3>Önceki Çekilişler</h3>
+        <div class="history-section">
+            <div class="history-header">
+                <h3>Çekiliş Sonuçları</h3>
+                <button id="clearHistory" class="clear-button">Çekilişi Bitir</button>
+            </div>
             <ul id="historyList"></ul>
         </div>
     </div>
+
+    <!-- Popup -->
+    <div class="settings-popup" id="settingsPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Ayarlar</h3>
+                <span class="close-popup" id="closePopup">&times;</span>
+            </div>
+            <div class="popup-body">
+                <div class="setting-item">
+                    <label for="animationSpeed">Çekiliş Hızı</label>
+                    <select id="animationSpeed">
+                        <option value="3">Yavaş</option>
+                        <option value="2" selected>Normal</option>
+                        <option value="1">Hızlı</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="language">Dil / Language</label>
+                    <select id="language">
+                        <option value="tr">Türkçe</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="selectSound" src="sound/select.mp3"></audio>
+    <audio id="processingSound" src="sound/processing.mp3"></audio>
+    <audio id="resultSound" src="sound/result.mp3"></audio>
+    <audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/1111/1111-preview.mp3"></audio>
+
     <script src="script.js"></script>
 </body>
 </html> 
