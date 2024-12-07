@@ -36,7 +36,9 @@ const translations = {
         clearList: "Listeyi Temizle",
         confirmClear: "Listeyi temizlemek istediğinizden emin misiniz?",
         editWarning: "Çekiliş başladıktan sonra isim listesini düzenleyemezsiniz, öncelikle çekilişi bitirmeniz gerekiyor.",
-        startLessThanOne: "İlk sayı 1'den küçük olamaz!"
+        startLessThanOne: "İlk sayı 1'den küçük olamaz!",
+        saveResults: "Sonuçları İndir",
+        noResultsToSave: "İndirilecek sonuç bulunmuyor"
     },
     en: {
         firstNumber: "First Number",
@@ -74,7 +76,9 @@ const translations = {
         clearList: "Clear List",
         confirmClear: "Are you sure you want to clear the list?",
         editWarning: "You cannot edit the name list after the draw has started, you need to end the draw first.",
-        startLessThanOne: "First number cannot be less than 1!"
+        startLessThanOne: "First number cannot be less than 1!",
+        saveResults: "Save Results",
+        noResultsToSave: "No results to save"
     }
 };
 
@@ -322,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pickButton.textContent = translations[lang].pickNewNumber;
         }
 
-        // Çekiliş bitti mesajını g��ncelle
+        // Çekiliş bitti mesajını güncelle
         const message = pickButton.nextSibling;
         if (message && (message.textContent === 'Çekiliş bitti' || message.textContent === 'Draw ended')) {
             message.textContent = translations[lang].drawEnded;
@@ -588,6 +592,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const startNumber = parseInt(startNum.value) || 1;
         const currentSort = localStorage.getItem('sortOrder') || 'desc';
 
+        // Sonuçları indirme butonu için container
+        const saveButtonContainer = document.createElement('div');
+        saveButtonContainer.className = 'save-results-container';
+        
+        const saveButton = document.createElement('button');
+        saveButton.className = 'save-results-button';
+        saveButton.innerHTML = `<i class="fas fa-download"></i> ${translations[currentLang].saveResults}`;
+        saveButton.onclick = downloadResults;
+        saveButtonContainer.appendChild(saveButton);
+
         if (history.length === 0) {
             // Boş durum mesajı
             historyList.innerHTML = `
@@ -595,6 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fas fa-list-ol"></i>
                     <p>${translations[currentLang].noResults}</p>
                 </div>`;
+            saveButton.disabled = true;
+            saveButton.style.opacity = '0.5';
         } else {
             // Normal liste görünümü
             historyList.innerHTML = history
@@ -617,10 +633,80 @@ document.addEventListener('DOMContentLoaded', () => {
                     </li>`;
                 })
                 .join('');
+            saveButton.disabled = false;
+            saveButton.style.opacity = '1';
         }
+        
+        // Mevcut save-results-container'ı kaldır (varsa)
+        const existingContainer = document.querySelector('.save-results-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+        
+        // Yeni container'ı ekle
+        historyList.parentNode.appendChild(saveButtonContainer);
         
         clearHistoryBtn.disabled = history.length === 0;
         adjustHistoryHeight();
+    }
+
+    // Sonuçları indirme fonksiyonu
+    function downloadResults() {
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        if (history.length === 0) {
+            alert(translations[currentLang].noResultsToSave);
+            return;
+        }
+
+        const namesList = localStorage.getItem('namesList') || '';
+        const names = namesList.split('\n').filter(name => name.trim());
+        const startNumber = parseInt(startNum.value) || 1;
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
+        const title = mainTitle.textContent;
+        
+        // Tarih ve saat formatı
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        const dateStr = `${day}.${month}.${year}`;
+        const timeStr = `${hours}:${minutes}:${seconds}`;
+
+        let content = `${title}\n`;
+        content += `${dateStr} ${timeStr}\n\n`;
+        content += `${translations[currentLang].drawResults}:\n`;
+        content += '------------------------\n';
+
+        const sortedHistory = currentSort === 'asc' ? [...history].reverse() : [...history];
+        
+        sortedHistory.forEach((num, index) => {
+            const listIndex = num - startNumber;
+            const listItem = names[listIndex];
+            const displayIndex = index + 1;
+            
+            if (listItem) {
+                content += `${displayIndex}. ${listItem} (${num})\n`;
+            } else {
+                content += `${displayIndex}. ${num}\n`;
+            }
+        });
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        // Dosya adında da aynı tarih formatını kullan
+        a.download = `cekilis_sonuclari_${day}-${month}-${year}.txt`;
+        
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
 
     // Çekilişi bitir

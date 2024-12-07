@@ -701,4 +701,36 @@ input::-ms-input-placeholder {
     border-radius: 4px;
     display: none;
 }
+
+.save-results-container {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.save-results-button {
+    background-color: #198754;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.save-results-button:hover {
+    background-color: #146c43;
+}
+
+.save-results-button:disabled {
+    cursor: not-allowed;
+}
+
+.save-results-button i {
+    font-size: 16px;
+}
  
