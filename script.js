@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Dil de��iştirme fonksiyonu
+    // Dil değiştirme fonksiyonu
     function updateLanguage(lang) {
         currentLang = lang;
         document.querySelector('label[for="startNum"]').textContent = translations[lang].firstNumber;
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
         titleInput.placeholder = translations[lang].titlePlaceholder;
 
-        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
+        // Eğer varsay��lan başlık kullanılıyorsa, yeni dildeki başlığı göster
         const savedTitle = localStorage.getItem('drawTitle');
         if (!savedTitle) {
             mainTitle.textContent = translations[lang].defaultTitle;
@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Başlığı kaydet
+    // Başlı��ı kaydet
     titleInput.addEventListener('input', () => {
         const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
         mainTitle.textContent = newTitle;
