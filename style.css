@@ -506,6 +506,73 @@ input[type="number"] {
         width: auto;
         max-width: none;
     }
+
+    .popup-content,
+    .names-list-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 90vh;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    .popup-header,
+    .names-list-header {
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .popup-header h3,
+    .names-list-header h3 {
+        font-size: 18px;
+    }
+
+    .setting-item {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .setting-item label {
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .setting-item input[type="text"],
+    .setting-item select,
+    .setting-item textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .setting-item input[type="text"] {
+        max-width: none;
+    }
+
+    .names-list-buttons,
+    .popup-body {
+        padding: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .apply-button,
+    .text-button,
+    .reset-button {
+        padding: 12px;
+        font-size: 14px;
+        margin: 5px 0;
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    .close-popup {
+        padding: 10px;
+    }
 }
 
 @keyframes highlightRow {
