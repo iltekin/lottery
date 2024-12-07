@@ -12,7 +12,7 @@ const translations = {
         slow: "Yavaş",
         normal: "Normal",
         fast: "Hızlı",
-        drawEnded: "Tebrikler! Çekiliş başarıyla tamamlandı",
+        drawEnded: "Çekilecek başka sayı kalmadı",
         confirmEnd: "Çekilişi bitirmek istediğinizden emin misiniz? Tüm sonuçlar silinecektir.",
         enterValidStart: "Lütfen geçerli bir başlangıç sayısı giriniz!",
         enterValidEnd: "Lütfen geçerli bir bitiş sayısı giriniz!",
@@ -32,11 +32,11 @@ const translations = {
         noResults: "Henüz çekiliş sonucu bulunmuyor",
         namesList: "İsim Listesi",
         namesListDescription: "İsimleri her satıra bir tane gelecek şekilde yazın...",
-        namesPlaceholder: "İsimleri her satıra bir tane gelecek şekilde yazın...",
         save: "Kaydet",
         clearList: "Listeyi Temizle",
         confirmClear: "Listeyi temizlemek istediğinizden emin misiniz?",
-        editWarning: "Çekiliş başladıktan sonra isim listesini düzenleyemezsiniz, öncelikle çekilişi bitirmeniz gerekiyor."
+        editWarning: "Çekiliş başladıktan sonra isim listesini düzenleyemezsiniz, öncelikle çekilişi bitirmeniz gerekiyor.",
+        startLessThanOne: "İlk sayı 1'den küçük olamaz!"
     },
     en: {
         firstNumber: "First Number",
@@ -50,7 +50,7 @@ const translations = {
         slow: "Slow",
         normal: "Normal",
         fast: "Fast",
-        drawEnded: "Congratulations! The draw has been successfully completed",
+        drawEnded: "There are no more numbers to draw",
         confirmEnd: "Are you sure you want to end the draw? All results will be deleted.",
         enterValidStart: "Please enter a valid start number!",
         enterValidEnd: "Please enter a valid end number!",
@@ -70,11 +70,11 @@ const translations = {
         noResults: "No draw results yet",
         namesList: "Name List",
         namesListDescription: "Enter names, one per line...",
-        namesPlaceholder: "Enter names, one per line...",
         save: "Save",
         clearList: "Clear List",
         confirmClear: "Are you sure you want to clear the list?",
-        editWarning: "You cannot edit the name list after the draw has started, you need to end the draw first."
+        editWarning: "You cannot edit the name list after the draw has started, you need to end the draw first.",
+        startLessThanOne: "First number cannot be less than 1!"
     }
 };
 
@@ -109,6 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Kaydedilmiş sayıları yükle
     function loadSavedNumbers() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        
+        // İsim listesini kontrol et
+        const names = (localStorage.getItem('namesList') || '').split('\n').filter(name => name.trim());
+        
         if (history.length > 0) {
             const savedUsedNumbers = JSON.parse(localStorage.getItem('usedNumbers') || '[]');
             usedNumbers = new Set(savedUsedNumbers);
@@ -130,6 +134,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
                     ballsContainer.appendChild(ball);
                 }
+            }
+        } else if (names.length > 0) {
+            // Eğer çekiliş yoksa ama isim listesi varsa
+            startNum.value = '1';
+            endNum.value = names.length.toString();
+            startNum.disabled = true;
+            endNum.disabled = true;
+            
+            // İsim sayısını localStorage'a kaydet
+            localStorage.setItem('lotteryRange', JSON.stringify({
+                start: 1,
+                end: names.length
+            }));
+            
+            pickButton.textContent = translations[currentLang].startDraw;
+            
+            // Topları isim sayısına göre ayarla
+            const digitCount = names.length.toString().length;
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < digitCount; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
             }
         } else {
             startNum.value = '1';
@@ -155,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     namesListContent.innerHTML = `
         <div class="setting-item">
             <label for="namesTextarea">${translations[currentLang].namesListDescription}</label>
-            <textarea id="namesTextarea" placeholder="${translations[currentLang].namesPlaceholder}"></textarea>
+            <textarea id="namesTextarea"></textarea>
         </div>
         <div class="names-list-buttons">
             <button id="saveNames" class="apply-button">${translations[currentLang].save}</button>
@@ -184,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const warning = document.createElement('div');
             warning.className = 'warning-message';
             warning.textContent = translations[currentLang].editWarning;
-            namesTextarea.parentNode.insertBefore(warning, namesTextarea.nextSibling);
+            namesTextarea.parentNode.insertBefore(warning, namesTextarea);
             return warning;
         })();
 
@@ -272,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // İsim listesi metinlerini güncelle
         document.querySelector('.names-list-header h3').textContent = translations[lang].namesList;
         document.querySelector('label[for="namesTextarea"]').textContent = translations[lang].namesListDescription;
-        namesTextarea.placeholder = translations[lang].namesPlaceholder;
         saveButton.textContent = translations[lang].save;
         clearButton.textContent = translations[lang].clearList;
 
@@ -295,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pickButton.textContent = translations[lang].pickNewNumber;
         }
 
-        // Çekiliş bitti mesajını güncelle
+        // Çekiliş bitti mesajını g��ncelle
         const message = pickButton.nextSibling;
         if (message && (message.textContent === 'Çekiliş bitti' || message.textContent === 'Draw ended')) {
             message.textContent = translations[lang].drawEnded;
@@ -341,9 +368,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
         
+        // İlk sayı 1'den küçük olamaz kontrolü
+        if (start < 1) {
+            alert(translations[currentLang].startLessThanOne);
+            startNum.value = '1';
+            return;
+        }
+        
+        // Mevcut kontrol
         if (start > end && end) {
             alert(translations[currentLang].startGreaterThanEnd);
-            startNum.value = '';
+            startNum.value = '1';
         }
     });
 
@@ -362,7 +397,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
         
-        // Başlangıç ve bitiş sayısı kontrolü
+        // İlk sayı kontrolü
+        if (isNaN(start) || start < 1) {
+            alert(translations[currentLang].startLessThanOne);
+            startNum.value = '1';
+            return;
+        }
+        
+        // Mevcut kontroller
         if (isNaN(start) || start < 0) {
             alert(translations[currentLang].enterValidStart);
             return;
@@ -444,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index >= digits) {
                 saveResult(randomNumber);
                 pickButton.disabled = false;
-                // Sonuç sesini ��al
+                // Sonuç sesini çal
                 if (isSoundOn) {
                     resultSound.currentTime = 0;
                     resultSound.play();
@@ -602,13 +644,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 warningMessage.style.display = 'none';
             }
 
-            // İsim listesine göre sayıları ayarla
-            const names = namesTextarea.value.split('\n').filter(name => name.trim());
+            // İsim listesindeki isim sayısını kontrol et
+            const names = (localStorage.getItem('namesList') || '').split('\n').filter(name => name.trim());
             if (names.length > 0) {
                 startNum.value = '1';
                 endNum.value = names.length.toString();
                 startNum.disabled = true;
                 endNum.disabled = true;
+                
+                // İsim sayısını localStorage'a kaydet
+                localStorage.setItem('lotteryRange', JSON.stringify({
+                    start: 1,
+                    end: names.length
+                }));
             } else {
                 startNum.disabled = false;
                 endNum.disabled = false;
