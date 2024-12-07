@@ -814,4 +814,187 @@ input::-ms-input-placeholder {
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+.speed-buttons {
+    display: flex;
+    gap: 8px;
+    padding: 2px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.speed-option {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+    font-weight: normal;
+    border-radius: 3px;
+}
+
+.speed-option:first-child {
+    border-radius: 3px;
+}
+
+.speed-option:last-child {
+    border-radius: 3px;
+}
+
+.speed-option:hover {
+    border-color: #4CAF50;
+}
+
+.speed-option.active {
+    border: 2px solid #4CAF50;
+    padding: 7px 11px;
+    background-color: #f8f9fa;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.speed-option.active:hover {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .speed-option {
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .speed-option.active {
+        padding: 11px;
+    }
+}
+
+/* Sıralama butonları için ek stiller */
+.sort-option {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+    font-weight: normal;
+    border-radius: 3px;
+}
+
+.sort-option:hover {
+    border-color: #4CAF50;
+}
+
+.sort-option.active {
+    border: 2px solid #4CAF50;
+    padding: 7px 11px;
+    background-color: #f8f9fa;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.sort-option.active:hover {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .sort-option {
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .sort-option.active {
+        padding: 11px;
+    }
+}
+
+/* Dil seçimi butonları için stiller */
+.lang-option {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+    font-weight: normal;
+    border-radius: 3px;
+}
+
+.lang-option:hover {
+    border-color: #4CAF50;
+}
+
+.lang-option.active {
+    border: 2px solid #4CAF50;
+    padding: 7px 11px;
+    background-color: #f8f9fa;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.lang-option.active:hover {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .lang-option {
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .lang-option.active {
+        padding: 11px;
+    }
+}
+
+/* Text input için modern stil */
+.setting-item input[type="text"] {
+    padding: 12px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+.setting-item input[type="text"]:hover {
+    border-color: #4CAF50;
+}
+
+.setting-item input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    background-color: white;
+}
+
+.setting-item input[type="text"]::placeholder {
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+/* Mobil görünüm için */
+@media (max-width: 768px) {
+    .setting-item input[type="text"] {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+
+    .setting-item input[type="text"]::placeholder {
+        font-size: 16px;
+    }
+}
  

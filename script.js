@@ -314,10 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Hız seçeneklerini güncelle
-        const speedOptions = animationSpeed.options;
-        speedOptions[0].textContent = translations[lang].slow;
-        speedOptions[1].textContent = translations[lang].normal;
-        speedOptions[2].textContent = translations[lang].fast;
+        document.querySelectorAll('.speed-option').forEach(btn => {
+            const speed = btn.dataset.value;
+            if (speed === '4') btn.textContent = translations[lang].slow;
+            if (speed === '2') btn.textContent = translations[lang].normal;
+            if (speed === '1') btn.textContent = translations[lang].fast;
+        });
         
         // Buton metnini güncelle
         if (!document.querySelector('.history-section').querySelector('li')) {
@@ -338,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
         titleInput.placeholder = translations[lang].titlePlaceholder;
 
-        // Eğer varsay��lan başlık kullanılıyorsa, yeni dildeki başlığı göster
+        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
         const savedTitle = localStorage.getItem('drawTitle');
         if (!savedTitle) {
             mainTitle.textContent = translations[lang].defaultTitle;
@@ -356,6 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (historyList.querySelector('.empty-state')) {
             historyList.querySelector('.empty-state p').textContent = translations[lang].noResults;
         }
+
+        // Sıralama seçeneklerini güncelle
+        document.querySelectorAll('.sort-option').forEach(btn => {
+            const sort = btn.dataset.value;
+            if (sort === 'desc') btn.textContent = translations[lang].descending;
+            if (sort === 'asc') btn.textContent = translations[lang].ascending;
+        });
     }
 
     // Dil seçimi değiştiğinde
@@ -482,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const digits = max.toString().length;
         
-        // Seçilen sayıyı basamaklarına ayır
+        // Seçilen sayıyı basamaklarına ay��r
         const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
         let currentIndex = 0;
 
@@ -510,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const ball = document.getElementById(`ball${index}`);
             const selectedNumber = result[index];
+            const currentSpeed = localStorage.getItem('animationSpeed') || '2';
 
             // Sonsuz döngü için strip oluştur
             let strip = document.createElement('div');
@@ -545,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { y: 0 },
                 { 
                     y: -(100 * 99 + selectedNumber * 100),
-                    duration: parseInt(animationSpeed.value),
+                    duration: parseInt(currentSpeed),
                     ease: "power2.inOut",
                     onComplete: () => {
                         ball.innerHTML = `<div class="number">${selectedNumber}</div>`;
@@ -612,16 +622,23 @@ document.addEventListener('DOMContentLoaded', () => {
             saveButton.disabled = true;
             saveButton.style.opacity = '0.5';
         } else {
+            // Sıralamaya göre listeyi düzenle
+            const sortedHistory = [...history];
+            if (currentSort === 'asc') {
+                sortedHistory.reverse();
+            }
+
             // Normal liste görünümü
-            historyList.innerHTML = history
+            historyList.innerHTML = sortedHistory
                 .map((num, index) => {
                     const listIndex = num - startNumber;
                     const listItem = names[listIndex];
                     const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
                     const numberSpan = `<span class="result-number">${num}</span>`;
                     
+                    // Sıra numarasını sıralamaya göre ayarla
                     const displayIndex = currentSort === 'asc' ? 
-                        history.length - index : 
+                        sortedHistory.length - index : 
                         index + 1;
 
                     return `<li>
@@ -828,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Başlı��ı kaydet
+    // Başlığı kaydet
     titleInput.addEventListener('input', () => {
         const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
         mainTitle.textContent = newTitle;
@@ -842,20 +859,42 @@ document.addEventListener('DOMContentLoaded', () => {
     resetSettingsBtn.addEventListener('click', () => {
         if (confirm(translations[currentLang].confirmReset)) {
             // Hızı normale getir
-            animationSpeed.value = '2';
             localStorage.setItem('animationSpeed', '2');
+            
+            // Hız butonlarını güncelle
+            document.querySelectorAll('.speed-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === '2') {
+                    btn.classList.add('active');
+                }
+            });
 
-            // Title' default'a getir
+            // Title'ı default'a getir
             localStorage.removeItem('drawTitle');
             mainTitle.textContent = translations[currentLang].defaultTitle;
             titleInput.value = translations[currentLang].defaultTitle;
 
             // Sıralama ayarını varsayılana getir (desc)
-            sortOrder.value = 'desc';
             localStorage.setItem('sortOrder', 'desc');
+            document.querySelectorAll('.sort-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === 'desc') {
+                    btn.classList.add('active');
+                }
+            });
 
             // Listeyi güncelle
             loadHistory();
+
+            // Dil ayarını varsayılana getir (tr)
+            localStorage.setItem('language', 'tr');
+            document.querySelectorAll('.lang-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === 'tr') {
+                    btn.classList.add('active');
+                }
+            });
+            updateLanguage('tr');
         }
     });
 
@@ -916,4 +955,105 @@ document.addEventListener('DOMContentLoaded', () => {
             pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
         }
     }
+
+    // createSpeedButtons fonksiyonunda hız değerlerini düzeltelim
+    function createSpeedButtons() {
+        const speedSelect = document.getElementById('animationSpeed');
+        const speedValue = localStorage.getItem('animationSpeed') || '2';
+        const speedContainer = document.createElement('div');
+        speedContainer.className = 'speed-buttons';
+        
+        const speeds = [
+            { value: '4', label: translations[currentLang].slow },
+            { value: '2', label: translations[currentLang].normal },
+            { value: '1', label: translations[currentLang].fast }
+        ];
+        
+        speeds.forEach(speed => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `speed-option ${speed.value === speedValue ? 'active' : ''}`;
+            button.dataset.value = speed.value;
+            button.textContent = speed.label;
+            
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.speed-option').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                localStorage.setItem('animationSpeed', speed.value);
+            });
+            
+            speedContainer.appendChild(button);
+        });
+        
+        speedSelect.parentNode.replaceChild(speedContainer, speedSelect);
+    }
+
+    // createSortButtons fonksiyonunu ekleyelim
+    function createSortButtons() {
+        const sortSelect = document.getElementById('sortOrder');
+        const sortValue = localStorage.getItem('sortOrder') || 'desc';
+        const sortContainer = document.createElement('div');
+        sortContainer.className = 'speed-buttons';  // Aynı stili kullanıyoruz
+        
+        const sortOptions = [
+            { value: 'desc', label: translations[currentLang].descending },
+            { value: 'asc', label: translations[currentLang].ascending }
+        ];
+        
+        sortOptions.forEach(option => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `sort-option ${option.value === sortValue ? 'active' : ''}`;
+            button.dataset.value = option.value;
+            button.textContent = option.label;
+            
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.sort-option').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                localStorage.setItem('sortOrder', option.value);
+                loadHistory();
+            });
+            
+            sortContainer.appendChild(button);
+        });
+        
+        sortSelect.parentNode.replaceChild(sortContainer, sortSelect);
+    }
+
+    // createLanguageButtons fonksiyonunu ekleyelim
+    function createLanguageButtons() {
+        const langSelect = document.getElementById('language');
+        const langValue = localStorage.getItem('language') || 'tr';
+        const langContainer = document.createElement('div');
+        langContainer.className = 'speed-buttons';  // Aynı stili kullanıyoruz
+        
+        const languages = [
+            { value: 'tr', label: '🇹🇷 Türkçe' },
+            { value: 'en', label: '🇬🇧 English' }
+        ];
+        
+        languages.forEach(lang => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `lang-option ${lang.value === langValue ? 'active' : ''}`;
+            button.dataset.value = lang.value;
+            button.textContent = lang.label;
+            
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.lang-option').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                localStorage.setItem('language', lang.value);
+                updateLanguage(lang.value);
+            });
+            
+            langContainer.appendChild(button);
+        });
+        
+        langSelect.parentNode.replaceChild(langContainer, langSelect);
+    }
+
+    // Sayfa yüklendiğinde çağır
+    createSpeedButtons();
+    createSortButtons();
+    createLanguageButtons();
 }); 
