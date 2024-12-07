@@ -67,6 +67,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     text-align: center;
+    text-transform: uppercase;
 }
 
 input {
@@ -75,6 +76,8 @@ input {
     border-radius: 5px;
     width: 150px;
     text-align: center;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .balls-container {
@@ -126,6 +129,7 @@ button {
     border: none;
     border-radius: 5px;
     transition: background-color 0.3s;
+    text-transform: uppercase;
 }
 
 button:hover {
@@ -187,17 +191,21 @@ button:hover {
 .history-header h3 {
     margin: 0;
     color: #333;
+    line-height: 1;
+    padding: 6px 0;
 }
 
 .clear-button {
-    padding: 8px 15px;
-    font-size: 14px;
+    padding: 6px 12px;
+    font-size: 12px;
     background-color: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-weight: bold;
+    line-height: 1;
 }
 
 .clear-button:hover {
@@ -218,7 +226,9 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 input[type="number"] {
-    -moz-appearance: textfield; /* Firefox için */
+    -moz-appearance: textfield;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .settings-popup {
@@ -373,6 +383,7 @@ input[type="number"] {
     text-align: center;
     margin: 0;
     transition: all 0.3s;
+    text-transform: none;
 }
 
 .text-button:hover {
@@ -428,5 +439,26 @@ input[type="number"] {
 
 .highlight-ball-animation {
     animation: highlightBall 3s ease-out;
+}
+
+/* Input placeholder rengini soldur */
+input::placeholder {
+    color: #ccc;  /* Daha soluk gri */
+}
+
+/* Firefox için placeholder rengi */
+input::-moz-placeholder {
+    color: #ccc;
+    opacity: 1;  /* Firefox'ta opacity varsayılan olarak 0.54 */
+}
+
+/* Edge için placeholder rengi */
+input:-ms-input-placeholder {
+    color: #ccc;
+}
+
+/* Internet Explorer için placeholder rengi */
+input::-ms-input-placeholder {
+    color: #ccc;
 }
  

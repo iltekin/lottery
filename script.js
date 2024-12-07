@@ -5,7 +5,7 @@ const translations = {
         lastNumber: "Son Sayı",
         startDraw: "Çekilişi Başlat",
         pickNewNumber: "Yeni Sayı Çek",
-        drawResults: "Çekiliş Sonuçları",
+        drawResults: "Sonuçlar",
         endDraw: "Çekilişi Bitir",
         settings: "Ayarlar",
         drawSpeed: "Çekiliş Hızı",
@@ -37,7 +37,7 @@ const translations = {
         lastNumber: "Last Number",
         startDraw: "Start Draw",
         pickNewNumber: "Pick New Number",
-        drawResults: "Draw Results",
+        drawResults: "Results",
         endDraw: "End Draw",
         settings: "Settings",
         drawSpeed: "Draw Speed",
@@ -228,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Input'ları devre dışı bırak
         startNum.disabled = true;
         endNum.disabled = true;
+        resultList.disabled = true;
         
         // Mevcut topları temizle
         ballsContainer.innerHTML = '';
@@ -431,6 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 endNum.value = savedNumbers.end;
                 startNum.disabled = true;
                 endNum.disabled = true;
+                resultList.disabled = true;
+                
                 // Çekiliş başladysa buton yazısını değiştir
                 pickButton.textContent = translations[currentLang].pickNewNumber;
 
@@ -459,6 +462,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
                 ballsContainer.appendChild(ball);
             }
+            resultList.disabled = false;
+
+            // Son sayı inputuna odaklan
+            endNum.focus();
         }
     }
 
@@ -469,11 +476,20 @@ document.addEventListener('DOMContentLoaded', () => {
             usedNumbers.clear();
             loadHistory();
             
-            // Input'ları aktif et ve temizle
+            // Input'ları aktif et
             startNum.disabled = false;
             endNum.disabled = false;
-            startNum.value = '1';
-            endNum.value = '';
+            resultList.disabled = false;
+
+            // İsim listesine göre sayıları ayarla
+            const items = resultList.value.split('\n').filter(item => item.trim());
+            if (items.length > 0) {
+                startNum.value = '1';
+                endNum.value = items.length.toString();
+            } else {
+                startNum.value = '1';
+                endNum.value = '';
+            }
             
             // Buton yazısını değiştir
             pickButton.textContent = translations[currentLang].startDraw;
@@ -490,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sayı seç butonunu aktif et
             pickButton.disabled = false;
             
-            // Çekili�� bitti mesajını kaldır
+            // Çekiliş bitti mesajını kaldır
             const message = pickButton.nextSibling;
             if (message && message.textContent === 'Çekiliş bitti') {
                 message.remove();
