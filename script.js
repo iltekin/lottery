@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Dil değiştirme fonksiyonu
+    // Dil de��iştirme fonksiyonu
     function updateLanguage(lang) {
         currentLang = lang;
         document.querySelector('label[for="startNum"]').textContent = translations[lang].firstNumber;
@@ -598,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const saveButton = document.createElement('button');
         saveButton.className = 'save-results-button';
-        saveButton.innerHTML = `<i class="fas fa-download"></i> ${translations[currentLang].saveResults}`;
+        saveButton.innerHTML = '<i class="fas fa-download"></i>';
         saveButton.onclick = downloadResults;
         saveButtonContainer.appendChild(saveButton);
 
@@ -643,8 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
             existingContainer.remove();
         }
         
-        // Yeni container'ı ekle
-        historyList.parentNode.appendChild(saveButtonContainer);
+        // Yeni container'ı history-section'a ekle
+        document.querySelector('.history-section').appendChild(saveButtonContainer);
         
         clearHistoryBtn.disabled = history.length === 0;
         adjustHistoryHeight();
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Animasyon hızını localStorage'a kaydet
+    // Animasyon hızın localStorage'a kaydet
     animationSpeed.addEventListener('change', () => {
         localStorage.setItem('animationSpeed', animationSpeed.value);
     });

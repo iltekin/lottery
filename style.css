@@ -703,34 +703,43 @@ input::-ms-input-placeholder {
 }
 
 .save-results-container {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 30px 0 0;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .save-results-button {
-    background-color: #198754;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
+    width: auto;
+    min-width: auto;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    color: #6c757d;
     cursor: pointer;
-    font-size: 14px;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: background-color 0.3s;
+    justify-content: center;
 }
 
-.save-results-button:hover {
-    background-color: #146c43;
+.save-results-button i {
+    font-size: 14px;
+}
+
+.save-results-button:hover:not(:disabled) {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
 }
 
 .save-results-button:disabled {
     cursor: not-allowed;
-}
-
-.save-results-button i {
-    font-size: 16px;
+    opacity: 0.5;
 }
  
