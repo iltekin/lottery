@@ -1,9 +1,16 @@
+* {
+    box-sizing: border-box;
+    /* border: 1px solid red; */
+}
+
 body {
     margin: 0;
     background-color: #f0f0f0;
     font-family: 'DM Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    position: relative;
     min-height: 100vh;
-    padding-top: 30px;
 }
 
 .main-container {
@@ -17,9 +24,19 @@ body {
 @media (min-width: 768px) {
     .main-container {
         flex-direction: row;
+        min-width: 700px;
         max-width: 1200px;
         margin: 0 auto;
         align-items: flex-start;
+        flex: 1 0 auto;
+    }
+}
+
+
+/* Desktop için iki sütunlu düzen */
+@media (min-width: 1200px) {
+    .main-container {
+        min-width: 1080px;
     }
 }
 
@@ -279,7 +296,8 @@ input[type="number"] {
     background: white;
     padding: 20px;
     border-radius: 10px;
-    min-width: 300px;
+    width: 400px;
+    max-width: 90%;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
@@ -392,18 +410,7 @@ input[type="number"] {
     text-align: center;
     color: #333;
     font-size: 32px;
-}
-
-.setting-item textarea {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    width: 100%;
-    min-height: 100px;
-    resize: vertical;
-    box-sizing: border-box;
-    font-family: inherit;
+    padding: 10px 0;
 }
 
 .reset-button {
@@ -557,9 +564,7 @@ input[type="number"] {
         font-size: 14px;
     }
 
-    .setting-item input[type="text"],
-    .setting-item select,
-    .setting-item textarea {
+    .setting-item input[type="text"] {
         width: 100%;
         box-sizing: border-box;
         padding: 10px;
@@ -691,17 +696,6 @@ input::-ms-input-placeholder {
     margin-bottom: 20px;
 }
 
-.names-list-body textarea {
-    width: 100%;
-    min-height: 200px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    resize: vertical;
-    margin-top: 5px;
-}
-
 .names-list-body .apply-button {
     width: 100%;
     margin-top: 10px;
@@ -786,14 +780,7 @@ input::-ms-input-placeholder {
 }
 
 .save-results-container {
-    position: static;
-    bottom: 0;
-    left: 0;
     width: 100%;
-    padding: 10px 30px 0 0;
-    z-index: 10;
-    display: flex;
-    justify-content: flex-end;
 }
 
 .save-results-button {
@@ -968,6 +955,7 @@ input::-ms-input-placeholder {
 }
 
 /* Text input için modern stil */
+textarea,
 .setting-item input[type="text"] {
     padding: 12px 16px;
     border: 1px solid #dee2e6;
@@ -979,6 +967,11 @@ input::-ms-input-placeholder {
     transition: all 0.2s ease;
     background-color: #f8f9fa;
     color: #495057;
+}
+
+.setting-item textarea {
+    min-height: 200px;
+    resize: vertical;
 }
 
 .setting-item input[type="text"]:hover {
@@ -1099,5 +1092,24 @@ input::-ms-input-placeholder {
     font-weight: 500;
     text-align: center;
     min-height: 24px;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.footer a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: #0056b3;
+    text-decoration: underline;
 }
  

@@ -885,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function adjustHistoryHeight() {
         const lotterySection = document.querySelector('.lottery-section');
         const historySection = document.querySelector('.history-section');
-        historySection.style.minHeight = `${lotterySection.clientHeight - 60}px`;
+        historySection.style.minHeight = `${lotterySection.clientHeight}px`;
     }
 
     // Sayfa yüklendiğinde ve pencere boyutu değiştiğinde yüksekliği ayarla
