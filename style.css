@@ -5,7 +5,7 @@
 
 body {
     margin: 0;
-    background-color: #f0f0f0;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
     font-family: 'DM Sans', sans-serif;
     display: flex;
     flex-direction: column;
@@ -536,17 +536,64 @@ input[type="number"] {
 
     .popup-content,
     .names-list-content {
-        width: 95%;
-        margin: 10px;
-        max-height: 90vh;
-        padding: 15px;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+        padding: 20px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .popup-body,
+    .names-list-body {
+        flex: 1;
+        overflow-y: auto;
+        width: 100%;
         box-sizing: border-box;
+        padding: 30px 0 !important;
+    }
+
+    .popup-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .names-list-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .popup-header,
     .names-list-header {
-        padding-bottom: 15px;
-        margin-bottom: 15px;
+        padding: 20px;
+        margin: 0;
+        border-bottom: 1px solid #dee2e6;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .close-popup {
+        padding: 20px;
+        margin: -20px;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .setting-item:last-child {
+        margin-top: auto;
+        padding: 20px 0;
     }
 
     .popup-header h3,
@@ -573,15 +620,6 @@ input[type="number"] {
 
     .setting-item input[type="text"] {
         max-width: none;
-    }
-
-    .names-list-buttons,
-    .popup-body {
-        padding: 0;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
     }
 
     .apply-button,
@@ -662,14 +700,13 @@ input::-ms-input-placeholder {
 
 .names-list-content {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
+    width: 400px;
+    max-width: 100%;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
+    border-radius: 10px;
+    padding: 20px;
 }
 
 .names-list-header {
@@ -689,7 +726,6 @@ input::-ms-input-placeholder {
 .names-list-body {
     flex: 1;
     overflow-y: auto;
-    padding-right: 10px;
 }
 
 .names-list-body .setting-item {
@@ -974,10 +1010,12 @@ textarea,
     resize: vertical;
 }
 
+textarea,
 .setting-item input[type="text"]:hover {
     border-color: #4CAF50;
 }
 
+textarea,
 .setting-item input[type="text"]:focus {
     outline: none;
     border-color: #4CAF50;
@@ -985,6 +1023,7 @@ textarea,
     background-color: white;
 }
 
+textarea,
 .setting-item input[type="text"]::placeholder {
     color: #adb5bd;
     font-size: 14px;
@@ -992,11 +1031,13 @@ textarea,
 
 /* Mobil görünüm için */
 @media (max-width: 768px) {
+    textarea,
     .setting-item input[type="text"] {
         padding: 14px 16px;
         font-size: 16px;
     }
 
+    textarea,
     .setting-item input[type="text"]::placeholder {
         font-size: 16px;
     }
@@ -1098,7 +1139,7 @@ textarea,
     text-align: center;
     padding: 20px;
     color: #666;
-    font-size: 0.9rem;
+    font-size: 10px;
     width: 100%;
 }
 
@@ -1111,5 +1152,28 @@ textarea,
 .footer a:hover {
     color: #0056b3;
     text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .names-list-body {
+        flex: 1;
+        overflow-y: auto;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 30px 0 !important;
+    }
+
+    .names-list-buttons {
+        margin-top: auto;  /* Butonları alta itecek */
+        padding: 20px 0;  /* Butonlar için boşluk */
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .names-list-body .setting-item {
+        width: 100%;
+    }
 }
  
