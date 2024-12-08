@@ -106,20 +106,29 @@ const translations = {
 
 document.addEventListener('DOMContentLoaded', () => {
     // Ziyaretçi sayısını artır ve göster
-    fetch('https://count.iltekin.com/sanslitop/incr/start', {
+    const loginTime = localStorage.getItem('loginTime');
+    const currentTime = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+
+    let endpoint = 'incr';
+    if (loginTime && (currentTime - parseInt(loginTime)) < fiveMinutes) {
+        endpoint = 'get';
+    }
+
+    fetch(`https://count.iltekin.com/sanslitop/${endpoint}/start`, {
         method: 'GET',
         mode: 'cors'
     })
     .then(response => response.json())
     .then(data => {
-        // Ziyaretçi sayısı elementi oluştur
+        localStorage.setItem('loginTime', currentTime.toString());
         const visitorCount = document.createElement('div');
         visitorCount.className = 'visitor-count';
         visitorCount.textContent = `#${data.value}`;
         document.body.appendChild(visitorCount);
     })
     .catch(error => {
-        console.log('Ziyaretçi sayısı artırılamadı:', error);
+        console.log('Ziyaretçi sayısı alınamadı:', error);
     });
     
     // Temel elementleri seç
