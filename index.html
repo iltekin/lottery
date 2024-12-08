@@ -115,6 +115,24 @@
                     </select>
                 </div>
                 <div class="setting-item">
+                    <label for="backgroundImage">Arkaplan Resmi</label>
+                    <div class="background-controls">
+                        <input type="file" id="backgroundImage" accept="image/*" style="display: none;">
+                        <div class="image-upload-area">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Resim seçmek için tıklayın</span>
+                            </div>
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <img src="" alt="Seçilen arkaplan">
+                                <button class="remove-image" id="removeBackground">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-item">
                     <button id="applySettings" class="apply-button">Uygula</button>
                     <button id="resetSettings" class="text-button">Tüm Ayarları Sıfırla</button>
                 </div>

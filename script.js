@@ -133,6 +133,122 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global değişken olarak ekleyelim
     let currentBallIndex = 0;
 
+    // Arkaplan resmi için event listener'ları ekle
+    const backgroundInput = document.getElementById('backgroundImage');
+    const selectBackgroundBtn = document.getElementById('selectBackground');
+    const removeBackgroundBtn = document.getElementById('removeBackground');
+
+    // Resim yükleme alanı için elementleri seç
+    const imageUploadArea = document.querySelector('.image-upload-area');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = imagePreview.querySelector('img');
+
+    // Sayfa yüklendiğinde mevcut arkaplanı kontrol et
+    const savedBackground = localStorage.getItem('backgroundImage');
+    if (savedBackground) {
+        document.body.style.backgroundImage = `url(${savedBackground})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        previewImg.src = savedBackground;
+        uploadPlaceholder.style.display = 'none';
+        imagePreview.style.display = 'block';
+    }
+
+    // Resim yükleme alanına tıklandığında
+    imageUploadArea.addEventListener('click', () => {
+        backgroundInput.click();
+    });
+
+    // Resim seçildiğinde
+    backgroundInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageData = e.target.result;
+                localStorage.setItem('backgroundImage', imageData);
+                document.body.style.backgroundImage = `url(${imageData})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
+                previewImg.src = imageData;
+                uploadPlaceholder.style.display = 'none';
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Resmi kaldır butonuna tıklandığında
+    removeBackgroundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();  // Üst elementin click event'ini engelle
+        localStorage.removeItem('backgroundImage');
+        document.body.style.background = 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)';
+        uploadPlaceholder.style.display = 'flex';
+        imagePreview.style.display = 'none';
+        previewImg.src = '';
+    });
+
+    // Ayarları sıfırla fonksiyonuna arkaplan sıfırlama ekle
+    resetSettingsBtn.addEventListener('click', () => {
+        if (confirm(translations[currentLang].confirmReset)) {
+            // Hızı normale getir
+            localStorage.setItem('animationSpeed', '2');
+            
+            // Hız butonlarını güncelle
+            document.querySelectorAll('.speed-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === '2') {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Title'ı default'a getir
+            localStorage.removeItem('drawTitle');
+            mainTitle.textContent = translations[currentLang].defaultTitle;
+            titleInput.value = translations[currentLang].defaultTitle;
+
+            // Sıralama ayarını varsayılana getir (desc)
+            localStorage.setItem('sortOrder', 'desc');
+            document.querySelectorAll('.sort-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === 'desc') {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Listeyi güncelle
+            loadHistory();
+
+            // Dil ayarını varsayılana getir (tr)
+            localStorage.setItem('language', 'tr');
+            document.querySelectorAll('.lang-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === 'tr') {
+                    btn.classList.add('active');
+                }
+            });
+            updateLanguage('tr');
+
+            // Draw type'ı varsayılana getir (single-number)
+            localStorage.setItem('drawType', 'single-number');
+            drawTypeSelect.value = 'single-number';
+            
+            // Buton metnini güncelle
+            const history = document.querySelector('.history-section').querySelector('li');
+            if (history) {
+                pickButton.textContent = translations[currentLang].pickNewNumber;
+            }
+
+            // Arkaplanı sıfırla
+            localStorage.removeItem('backgroundImage');
+            document.body.style.background = 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)';
+            removeBackgroundBtn.style.display = 'none';
+        }
+    });
+
     // Kaydedilmi sayıları yükle
     function loadSavedNumbers() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
@@ -166,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else if (names.length > 0) {
-            // Eğer çekiliş yoksa ama isim listesi varsa
+            // Eğer ��ekiliş yoksa ama isim listesi varsa
             startNum.value = '1';
             endNum.value = names.length.toString();
             startNum.disabled = true;
