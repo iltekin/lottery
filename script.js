@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
         
-        // İlk sayı 1'den küçük olamaz kontrolü
+        // ��lk sayı 1'den küçük olamaz kontrolü
         if (start < 1) {
             alert(translations[currentLang].startLessThanOne);
             startNum.value = '1';
@@ -681,6 +681,9 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('lotteryRange');
             usedNumbers.clear();
             loadHistory();
+            
+            // Hata mesajını temizle
+            drawError.innerHTML = '';
             
             // İsim listesi textarea'sını güncelle
             updateNamesTextarea(false);
@@ -841,7 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Listeyi güncelle
             loadHistory();
 
-            // Dil ayarını varsay��lana getir (tr)
+            // Dil ayarını varsayılana getir (tr)
             localStorage.setItem('language', 'tr');
             document.querySelectorAll('.lang-option').forEach(btn => {
                 btn.classList.remove('active');
@@ -874,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadHistory();  // Listeyi yeniden yükle
     });
 
-    // Sayfa yüklendiğinde sıralama tercihini yükle
+    // Sayfa yüklendiğinde sıralama tercihini y��kle
     const savedSort = localStorage.getItem('sortOrder') || 'desc';
     sortOrder.value = savedSort;
 
