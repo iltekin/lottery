@@ -1404,4 +1404,14 @@ textarea::placeholder,
 #titleInput {
     padding-right: 32px;
 }
+
+.visitor-count {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    font-size: 10px;
+    color: #999;
+    opacity: 0.5;
+    z-index: 1000;
+}
  

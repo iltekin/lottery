@@ -105,6 +105,23 @@ const translations = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Ziyaretçi sayısını artır ve göster
+    fetch('https://count.iltekin.com/sanslitop/incr/start', {
+        method: 'GET',
+        mode: 'cors'
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Ziyaretçi sayısı elementi oluştur
+        const visitorCount = document.createElement('div');
+        visitorCount.className = 'visitor-count';
+        visitorCount.textContent = `#${data.value}`;
+        document.body.appendChild(visitorCount);
+    })
+    .catch(error => {
+        console.log('Ziyaretçi sayısı artırılamadı:', error);
+    });
+    
     // Temel elementleri seç
     const startNum = document.getElementById('startNum');
     const endNum = document.getElementById('endNum');
