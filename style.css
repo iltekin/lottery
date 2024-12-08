@@ -1,12 +1,11 @@
 * {
     box-sizing: border-box;
-    /* border: 1px solid red; */
+    font-family: 'Outfit', sans-serif;
 }
 
 body {
     margin: 0;
     background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-    font-family: 'DM Sans', sans-serif;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -160,7 +159,7 @@ input {
     height: 100px;
     line-height: 100px;
     font-size: 48px;
-    font-weight: bold;
+    font-weight: 500;
     color: #333;
     text-align: center;
 }
@@ -178,11 +177,50 @@ button {
 }
 
 #pickButton {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    background: linear-gradient(180deg, #2ea44f 0%, #2a9147 100%);
+    border: 1px solid rgba(27, 31, 35, 0.15);
+    box-shadow: 0 1px 0 rgba(27, 31, 35, 0.1);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 5px 16px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    min-width: 200px;
 }
 
 #pickButton:hover {
-    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    background: linear-gradient(180deg, #2ea44f 0%, #22863a 100%);
+    border-color: rgba(27, 31, 35, 0.15);
+    box-shadow: 0 1px 0 rgba(27, 31, 35, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+#pickButton:active {
+    background: linear-gradient(180deg, #279f43 0%, #22863a 100%);
+    border-color: rgba(27, 31, 35, 0.15);
+    box-shadow: inset 0 1px 0 rgba(20, 70, 32, 0.2);
+}
+
+#pickButton:disabled {
+    background: linear-gradient(180deg, #94d3a2 0%, #94d3a2 100%);
+    border-color: rgba(27, 31, 35, 0.1);
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Mobil görünüm için */
+@media (max-width: 768px) {
+    #pickButton {
+        width: 100%;
+        max-width: none;
+        height: 48px;  /* Mobilde biraz daha büyük */
+        font-size: 16px;
+    }
 }
 
 #historyList {
@@ -410,7 +448,10 @@ input[type="number"] {
 }
 
 .main-title-container {
-    padding: 60px 0 0 0;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .main-title {
@@ -418,6 +459,7 @@ input[type="number"] {
     color: #333;
     font-size: 32px;
     padding: 10px 0;
+    font-weight: 600;
 }
 
 .reset-button {
@@ -816,7 +858,7 @@ input::-ms-input-placeholder {
     }
     
     .control-icons > div:nth-child(2) {
-        flex: 2;  /* Orta kısım mobilde biraz daha geniş olsun */
+        flex: 2;  /* Orta kıs��m mobilde biraz daha geniş olsun */
     }
 }
 
@@ -832,6 +874,7 @@ input::-ms-input-placeholder {
 
 .save-results-container {
     width: 100%;
+    margin-top: 20px;
 }
 
 .save-results-button {
@@ -1130,6 +1173,11 @@ textarea::placeholder,
     font-size: 16px;
 }
 
+.draw-count-input input::placeholder {
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
 /* Mobil görünüm için */
 @media (max-width: 768px) {
     .draw-controls {
@@ -1315,5 +1363,32 @@ textarea::placeholder,
     .upload-placeholder span {
         font-size: 13px;
     }
+}
+
+.title-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.clear-title-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999;
+    font-size: 18px;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.clear-title-btn:hover {
+    color: #666;
+}
+
+/* Title input'un sağ padding'ini artır */
+#titleInput {
+    padding-right: 32px;
 }
  

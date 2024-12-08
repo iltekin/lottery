@@ -46,6 +46,10 @@ const translations = {
         drawCount: "Çekim sayısı",
         stopDraw: "Çekilişi Durdur",
         invalidDrawCount: "Lütfen 1-100 arası bir çekim sayısı girin",
+        drawCountPlaceholder: "Çekim sayısı",
+        uploadImageText: "Resim seçmek için tıklayın",
+        backgroundImageLabel: "Arkaplan Resmi",
+        footerText: 'Bu proje <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">Sezer İltekin</a> tarafından <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">açık kaynak</a> olarak geliştirilmiştir.',
     },
     en: {
         firstNumber: "First Number",
@@ -93,6 +97,10 @@ const translations = {
         drawCount: "Draw count",
         stopDraw: "Stop Draw",
         invalidDrawCount: "Please enter a draw count between 1-100",
+        drawCountPlaceholder: "Draw count",
+        uploadImageText: "Click to select image",
+        backgroundImageLabel: "Background Image",
+        footerText: 'This project is developed as <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">open source</a> by <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">Sezer İltekin</a>.',
     }
 };
 
@@ -191,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previewImg.src = '';
     });
 
-    // Ayarları sıfırla fonksiyonuna arkaplan sıfırlama ekle
+    // resetSettingsBtn için event listener'ı güncelle
     resetSettingsBtn.addEventListener('click', () => {
         if (confirm(translations[currentLang].confirmReset)) {
             // Hızı normale getir
@@ -205,10 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Title'ı default'a getir
-            localStorage.removeItem('drawTitle');
-            mainTitle.textContent = translations[currentLang].defaultTitle;
-            titleInput.value = translations[currentLang].defaultTitle;
+            // Title'ı boş yap
+            localStorage.setItem('drawTitle', ' ');
+            mainTitle.textContent = ' ';
+            titleInput.value = '';
 
             // Sıralama ayarını varsayılana getir (desc)
             localStorage.setItem('sortOrder', 'desc');
@@ -245,7 +253,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Arkaplanı sıfırla
             localStorage.removeItem('backgroundImage');
             document.body.style.background = 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)';
-            removeBackgroundBtn.style.display = 'none';
+            uploadPlaceholder.style.display = 'flex';
+            imagePreview.style.display = 'none';
+            previewImg.src = '';
+
+            // Popup'ı kapat
+            settingsPopup.style.display = 'none';
         }
     });
 
@@ -282,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else if (names.length > 0) {
-            // Eğer ��ekiliş yoksa ama isim listesi varsa
+            // Eğer çekiliş yoksa ama isim listesi varsa
             startNum.value = '1';
             endNum.value = names.length.toString();
             startNum.disabled = true;
@@ -591,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearHistoryBtn.textContent = translations[lang].endDraw;
         document.querySelector('.popup-header h3').textContent = translations[lang].settings;
         
-        // Input placeholder'larını güncelle
+        // Input placeholder'ları güncelle
         startNum.placeholder = translations[lang].startPlaceholder;
         endNum.placeholder = translations[lang].endPlaceholder;
 
@@ -634,11 +647,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
         titleInput.placeholder = translations[lang].titlePlaceholder;
 
-        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
+        // Başlık kontrolünü güncelle
         const savedTitle = localStorage.getItem('drawTitle');
-        if (!savedTitle) {
-            mainTitle.textContent = translations[lang].defaultTitle;
-            titleInput.value = translations[lang].defaultTitle;
+        if (savedTitle !== null) {
+            mainTitle.textContent = savedTitle;
+            titleInput.value = savedTitle;
+        } else {
+            mainTitle.textContent = ' ';  // Boş başla
+            titleInput.value = '';  // Input da boş başlasın
+            localStorage.setItem('drawTitle', ' ');  // localStorage'a boş kaydet
         }
 
         resetSettingsBtn.textContent = translations[lang].resetSettings;
@@ -665,6 +682,26 @@ document.addEventListener('DOMContentLoaded', () => {
         drawTypeOptions[0].textContent = translations[lang].singleNumber;
         drawTypeOptions[1].textContent = translations[lang].singleBall;
         drawTypeOptions[2].textContent = translations[lang].multiAuto;
+
+        // Çekim sayısı placeholder'ını güncelle
+        if (drawCountInput) {
+            drawCountInput.placeholder = translations[lang].drawCountPlaceholder;
+        }
+
+        // Arkaplan resmi yükleme metnini güncelle
+        const uploadPlaceholderText = document.querySelector('#uploadPlaceholder span');
+        if (uploadPlaceholderText) {
+            uploadPlaceholderText.textContent = translations[lang].uploadImageText;
+        }
+
+        // Arkaplan resmi label'ını güncelle
+        const backgroundLabel = document.querySelector('label[for="backgroundImage"]');
+        if (backgroundLabel) {
+            backgroundLabel.textContent = translations[lang].backgroundImageLabel;
+        }
+
+        // Footer metnini güncelle
+        document.querySelector('.footer p').innerHTML = translations[lang].footerText;
     }
 
     // Dil seçimi değiştiğinde
@@ -910,18 +947,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Başlığı yükle
     function loadTitle() {
         const savedTitle = localStorage.getItem('drawTitle');
-        if (savedTitle) {
+        if (savedTitle !== null) {
             mainTitle.textContent = savedTitle;
             titleInput.value = savedTitle;
         } else {
-            mainTitle.textContent = translations[currentLang].defaultTitle;
-            titleInput.value = translations[currentLang].defaultTitle;
+            mainTitle.textContent = ' ';  // Boş başla
+            titleInput.value = '';  // Input da boş başlasın
+            localStorage.setItem('drawTitle', ' ');  // localStorage'a boş kaydet
         }
     }
 
     // Başlığı kaydet
     titleInput.addEventListener('input', () => {
-        const newTitle = titleInput.value.trim() || translations[currentLang].defaultTitle;
+        const newTitle = titleInput.value.trim() || '';
         mainTitle.textContent = newTitle;
         localStorage.setItem('drawTitle', newTitle);
     });
@@ -929,59 +967,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sayfa yüklendiğinde başlangıç durumunu ayarla
     loadHistory();
     loadSavedNumbers();
-
-    // Ayarları sıfırlama fonksiyonu
-    resetSettingsBtn.addEventListener('click', () => {
-        if (confirm(translations[currentLang].confirmReset)) {
-            // Hızı normale getir
-            localStorage.setItem('animationSpeed', '2');
-            
-            // Hız butonlarını güncelle
-            document.querySelectorAll('.speed-option').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.value === '2') {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Title'ı default'a getir
-            localStorage.removeItem('drawTitle');
-            mainTitle.textContent = translations[currentLang].defaultTitle;
-            titleInput.value = translations[currentLang].defaultTitle;
-
-            // Sıralama ayarını varsayılana getir (desc)
-            localStorage.setItem('sortOrder', 'desc');
-            document.querySelectorAll('.sort-option').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.value === 'desc') {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Listeyi güncelle
-            loadHistory();
-
-            // Dil ayarını varsayılana getir (tr)
-            localStorage.setItem('language', 'tr');
-            document.querySelectorAll('.lang-option').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.value === 'tr') {
-                    btn.classList.add('active');
-                }
-            });
-            updateLanguage('tr');
-
-            // Draw type'ı varsayılana getir (single-number)
-            localStorage.setItem('drawType', 'single-number');
-            drawTypeSelect.value = 'single-number';
-            
-            // Buton metnini güncelle
-            const history = document.querySelector('.history-section').querySelector('li');
-            if (history) {
-                pickButton.textContent = translations[currentLang].pickNewNumber;
-            }
-        }
-    });
 
     // Uygula butonu için event listener
     applySettingsBtn.addEventListener('click', () => {
@@ -1531,4 +1516,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pencere boyutu değiştiğinde kontrol et
     window.addEventListener('resize', checkMobileSort);
+
+    // Title input container'ını oluştur ve mevcut input'u içine al
+    const titleInputContainer = document.createElement('div');
+    titleInputContainer.className = 'title-input-container';
+    const titleInputParent = titleInput.parentNode;
+
+    // Input'u yeni container'a taşı
+    titleInput.remove();
+    titleInputContainer.appendChild(titleInput);
+
+    // Çarpı ikonunu oluştur
+    const clearTitleBtn = document.createElement('span');
+    clearTitleBtn.className = 'clear-title-btn';
+    clearTitleBtn.innerHTML = '&times;';
+    titleInputContainer.appendChild(clearTitleBtn);
+
+    // Container'ı orijinal yere yerleştir
+    titleInputParent.appendChild(titleInputContainer);
+
+    // Çarpı ikonuna tıklama olayını ekle
+    clearTitleBtn.addEventListener('click', () => {
+        titleInput.value = ' ';  // Bir boşluk karakteri
+        mainTitle.textContent = ' ';  // Bir boşluk karakteri
+        localStorage.setItem('drawTitle', ' ');  // Bir boşluk karakteri
+    });
 }); 
