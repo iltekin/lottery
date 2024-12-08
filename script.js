@@ -125,6 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const visitorCount = document.createElement('div');
         visitorCount.className = 'visitor-count';
         visitorCount.textContent = `#${data.value}`;
+        const userIcon = document.createElement('i');
+        userIcon.className = 'fas fa-user';
+        visitorCount.insertBefore(userIcon, visitorCount.firstChild);
         document.body.appendChild(visitorCount);
     })
     .catch(error => {
