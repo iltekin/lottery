@@ -42,7 +42,10 @@ const translations = {
         noResultsToSave: "İndirilecek sonuç bulunmuyor",
         singleNumber: "TEK NUMARA",
         singleBall: "TEK TOP",
-        multiAuto: "ÇOKLU OTOMATİK"
+        multiAuto: "ÇOKLU OTOMATİK",
+        drawCount: "Çekim sayısı",
+        stopDraw: "Çekilişi Durdur",
+        invalidDrawCount: "Lütfen 1-100 arası bir çekim sayısı girin",
     },
     en: {
         firstNumber: "First Number",
@@ -86,7 +89,10 @@ const translations = {
         noResultsToSave: "No results to save",
         singleNumber: "SINGLE NUMBER",
         singleBall: "SINGLE BALL",
-        multiAuto: "MULTI AUTO"
+        multiAuto: "MULTI AUTO",
+        drawCount: "Draw count",
+        stopDraw: "Stop Draw",
+        invalidDrawCount: "Please enter a draw count between 1-100",
     }
 };
 
@@ -118,11 +124,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const applySettingsBtn = document.getElementById('applySettings');
     const sortOrder = document.getElementById('sortOrder');
     const drawTypeSelect = document.getElementById('drawType');
+    const drawCountInput = document.getElementById('drawCount');
+    const drawCountContainer = document.querySelector('.draw-count-input');
+    const drawError = document.getElementById('draw-error');
+    let isAutoDrawing = false;
+    let autoDrawInterval;
 
     // Global değişken olarak ekleyelim
     let currentBallIndex = 0;
 
-    // Kaydedilmiş sayıları yükle
+    // Kaydedilmi sayıları yükle
     function loadSavedNumbers() {
         const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
         
@@ -131,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (history.length > 0) {
             // Kullanılmış sayıları localStorage'dan yükle
-            usedNumbers = new Set(history);  // Değişiklik burada: savedUsedNumbers yerine direkt history kullan
+            usedNumbers = new Set(history);
 
             const savedNumbers = JSON.parse(localStorage.getItem('lotteryRange') || '{}');
             if (savedNumbers.start !== undefined && savedNumbers.end !== undefined) {
@@ -196,6 +207,142 @@ document.addEventListener('DOMContentLoaded', () => {
         
         adjustHistoryHeight();
     }
+
+    // loadHistory fonksiyonunu buraya taşıyalım
+    function loadHistory() {
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        const namesList = localStorage.getItem('namesList') || '';
+        const names = namesList.split('\n').filter(name => name.trim());
+        const startNumber = parseInt(startNum.value) || 1;
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
+
+        // Sonuçları indirme butonu için container
+        const saveButtonContainer = document.createElement('div');
+        saveButtonContainer.className = 'save-results-container';
+        
+        const saveButton = document.createElement('button');
+        saveButton.className = 'save-results-button';
+        saveButton.innerHTML = '<i class="fas fa-download"></i>';
+        saveButton.onclick = downloadResults;
+        saveButtonContainer.appendChild(saveButton);
+
+        if (history.length === 0) {
+            // Boş durum mesajı
+            historyList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-list-ol"></i>
+                    <p>${translations[currentLang].noResults}</p>
+                </div>`;
+            saveButton.disabled = true;
+            saveButton.style.opacity = '0.5';
+        } else {
+            // Sıralamaya göre listeyi düzenle
+            const sortedHistory = [...history];
+            if (currentSort === 'asc') {
+                sortedHistory.reverse();
+            }
+
+            // Normal liste görünümü
+            historyList.innerHTML = sortedHistory
+                .map((num, index) => {
+                    const listIndex = num - startNumber;
+                    const listItem = names[listIndex];
+                    const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
+                    const numberSpan = `<span class="result-number">${num}</span>`;
+                    
+                    // Sıra numarasını sıralamaya göre ayarla
+                    const displayIndex = currentSort === 'asc' ? 
+                        sortedHistory.length - index : 
+                        index + 1;
+
+                    return `<li>
+                        <div class="left-content">
+                            <span class="index-number">#${displayIndex}</span>
+                            ${nameSpan}
+                        </div>
+                        ${numberSpan}
+                    </li>`;
+                })
+                .join('');
+            saveButton.disabled = false;
+            saveButton.style.opacity = '1';
+        }
+        
+        // Mevcut save-results-container'ı kaldır (varsa)
+        const existingContainer = document.querySelector('.save-results-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+        
+        // Yeni container'ı history-section'a ekle
+        document.querySelector('.history-section').appendChild(saveButtonContainer);
+        
+        clearHistoryBtn.disabled = history.length === 0;
+        adjustHistoryHeight();
+    }
+
+    // downloadResults fonksiyonunu ekleyelim
+    function downloadResults() {
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        if (history.length === 0) {
+            alert(translations[currentLang].noResultsToSave);
+            return;
+        }
+
+        const namesList = localStorage.getItem('namesList') || '';
+        const names = namesList.split('\n').filter(name => name.trim());
+        const startNumber = parseInt(startNum.value) || 1;
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
+        const title = mainTitle.textContent;
+        
+        // Tarih ve saat formatı
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        const dateStr = `${day}.${month}.${year}`;
+        const timeStr = `${hours}:${minutes}:${seconds}`;
+
+        let content = `${title}\n`;
+        content += `${dateStr} ${timeStr}\n\n`;
+        content += `${translations[currentLang].drawResults}:\n`;
+        content += '------------------------\n';
+
+        const sortedHistory = currentSort === 'asc' ? [...history].reverse() : [...history];
+        
+        sortedHistory.forEach((num, index) => {
+            const listIndex = num - startNumber;
+            const listItem = names[listIndex];
+            const displayIndex = index + 1;
+            
+            if (listItem) {
+                content += `${displayIndex}. ${listItem} (${num})\n`;
+            } else {
+                content += `${displayIndex}. ${num}\n`;
+            }
+        });
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        // Dosya adında da aynı tarih formatını kullan
+        a.download = `cekilis_sonuclari_${day}-${month}-${year}.txt`;
+        
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
+
+    // Sayfa yüklendiğinde başlangıç durumunu ayarla
+    loadHistory();
+    loadSavedNumbers();
 
     // İsim listesi popup'ını oluştur
     const namesListContent = document.querySelector('.names-list-body');
@@ -443,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // pickButton click event'ini güncelle
+    // Pick button click event'ini güncelle
     pickButton.addEventListener('click', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
@@ -491,6 +638,25 @@ document.addEventListener('DOMContentLoaded', () => {
             endDraw();
             return;
         }
+
+        if (drawTypeSelect.value === 'multi-auto') {
+            if (!isAutoDrawing) {
+                startAutoDraw();
+            } else {
+                stopAutoDraw();
+            }
+            return;
+        }
+        
+        // Yeni çekim öncesi topları temizle
+        const digits = max.toString().length;
+        ballsContainer.innerHTML = '';
+        for (let i = 0; i < digits; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+            ballsContainer.appendChild(ball);
+        }
         
         // Çekiliş türüne göre animasyonu başlat
         if (drawTypeSelect.value === 'single-ball') {
@@ -507,307 +673,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // drawType değiştiğinde topları güncelle
-    drawTypeSelect.addEventListener('change', () => {
-        const history = document.querySelector('.history-section').querySelector('li');
-        const end = parseInt(endNum.value);
-        
-        // Draw type'ı localStorage'a kaydet
-        localStorage.setItem('drawType', drawTypeSelect.value);
-        
-        if (!isNaN(end)) {
-            const digits = end.toString().length;
-            
-            // Her zaman sayı kadar top göster
-            ballsContainer.innerHTML = '';
-            for (let i = 0; i < digits; i++) {
-                const ball = document.createElement('div');
-                ball.className = 'ball';
-                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
-                ballsContainer.appendChild(ball);
-            }
-        }
-        
-        if (!history) {
-            pickButton.textContent = translations[currentLang].startDraw;
-        } else {
-            pickButton.textContent = drawTypeSelect.value === 'single-ball' ? 
-                translations[currentLang].pickNewBall : 
-                translations[currentLang].pickNewNumber;
-        }
-    });
-
-    function animateBalls(max) {
-        const start = parseInt(startNum.value);
-        // Kullanılmamış bir sayı seç
-        let availableNumbers = [];
-        for (let i = start; i <= max; i++) {
-            if (!usedNumbers.has(i)) {
-                availableNumbers.push(i);
-            }
-        }
-
-        // Hiç kullanılmamış sayı kalmadıysa
-        if (availableNumbers.length === 0) {
-            pickButton.disabled = true;
-            
-            // Çekiliş bitti mesajı
-            const message = document.createElement('span');
-            message.style.marginTop = '10px';
-            message.style.color = '#198754';
-            message.textContent = translations[currentLang].drawEnded;
-            if (!pickButton.nextSibling || pickButton.nextSibling.nodeName !== 'SPAN') {
-                pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
-            }
-            
-            return;
-        }
-
-        // Random bir sayı seç
-        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-        const randomNumber = availableNumbers[randomIndex];
-        usedNumbers.add(randomNumber);
-
-        const digits = max.toString().length;
-        
-        // Seçilen sayıyı basamaklarına ayır
-        const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
-        let currentIndex = 0;
-
-        function animateBall(index) {
-            if (index >= digits) {
-                saveResult(randomNumber);
-                pickButton.disabled = false;
-                // Sonuç sesini çal
-                if (isSoundOn) {
-                    resultSound.currentTime = 0;
-                    resultSound.play();
-                }
-
-                // Tüm topları highlight et
-                const allBalls = document.querySelectorAll('.ball');
-                allBalls.forEach(ball => {
-                    ball.classList.add('highlight-ball-animation');
-                    setTimeout(() => {
-                        ball.classList.remove('highlight-ball-animation');
-                    }, 2000);
-                });
-
-                return;
-            }
-
-            const ball = document.getElementById(`ball${index}`);
-            const selectedNumber = result[index];
-            const currentSpeed = localStorage.getItem('animationSpeed') || '2';
-
-            // Sonsuz döngü için strip oluştur
-            let strip = document.createElement('div');
-            strip.className = 'number-strip';
-            
-            // 10 set rakam oluştur (sonsuz görünüm için)
-            for (let j = 0; j < 10; j++) {
-                for (let i = 0; i <= 9; i++) {
-                    let num = document.createElement('div');
-                    num.className = 'number';
-                    num.textContent = i;
-                    strip.appendChild(num);
-                }
-            }
-            
-            // Son sayıyı ekle
-            let finalNum = document.createElement('div');
-            finalNum.className = 'number';
-            finalNum.textContent = selectedNumber;
-            strip.appendChild(finalNum);
-
-            ball.innerHTML = '';
-            ball.appendChild(strip);
-
-            // Her rakam için processing sesini çal
-            if (isSoundOn) {
-                processingSound.currentTime = 0;
-                processingSound.play();
-            }
-
-            // GSAP ile animasyon
-            gsap.fromTo(strip, 
-                { y: 0 },
-                { 
-                    y: -(100 * 99 + selectedNumber * 100),
-                    duration: parseInt(currentSpeed),
-                    ease: "power2.inOut",
-                    onComplete: () => {
-                        ball.innerHTML = `<div class="number">${selectedNumber}</div>`;
-                        animateBall(index + 1);
-                    }
-                }
-            );
-        }
-
-        animateBall(0);
-    }
-
-    function saveResult(number) {
-        let history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
-        history.push(number);
-        localStorage.setItem('lotteryHistory', JSON.stringify(history));
-        
-        // Kullanılmış sayıları da kaydet
-        localStorage.setItem('usedNumbers', JSON.stringify([...usedNumbers]));
-        
-        // Geçmiş eklendiğinde butonu aktif et
-        clearHistoryBtn.disabled = false;
-        
-        loadHistory();
-
-        // Son eklenen satırı bul ve highlight animasyonunu uygula
-        const currentSort = localStorage.getItem('sortOrder') || 'desc';
-        const historyItems = historyList.querySelectorAll('li');
-        // desc modunda ilk öğe, asc modunda son öğe highlight edilmeli
-        const targetItem = currentSort === 'asc' ? historyItems[0] : historyItems[historyItems.length - 1];
-        
-        if (targetItem) {
-            targetItem.classList.add('highlight-animation');
-            setTimeout(() => {
-                targetItem.classList.remove('highlight-animation');
-            }, 2000);
-        }
-    }
-
-    function loadHistory() {
-        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
-        const namesList = localStorage.getItem('namesList') || '';
-        const names = namesList.split('\n').filter(name => name.trim());
-        const startNumber = parseInt(startNum.value) || 1;
-        const currentSort = localStorage.getItem('sortOrder') || 'desc';
-
-        // Sonuçları indirme butonu için container
-        const saveButtonContainer = document.createElement('div');
-        saveButtonContainer.className = 'save-results-container';
-        
-        const saveButton = document.createElement('button');
-        saveButton.className = 'save-results-button';
-        saveButton.innerHTML = '<i class="fas fa-download"></i>';
-        saveButton.onclick = downloadResults;
-        saveButtonContainer.appendChild(saveButton);
-
-        if (history.length === 0) {
-            // Boş durum mesajı
-            historyList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-list-ol"></i>
-                    <p>${translations[currentLang].noResults}</p>
-                </div>`;
-            saveButton.disabled = true;
-            saveButton.style.opacity = '0.5';
-        } else {
-            // Sıralamaya göre listeyi düzenle
-            const sortedHistory = [...history];
-            if (currentSort === 'asc') {
-                sortedHistory.reverse();
-            }
-
-            // Normal liste görünümü
-            historyList.innerHTML = sortedHistory
-                .map((num, index) => {
-                    const listIndex = num - startNumber;
-                    const listItem = names[listIndex];
-                    const nameSpan = listItem ? `<span class="result-name">${listItem}</span>` : '';
-                    const numberSpan = `<span class="result-number">${num}</span>`;
-                    
-                    // Sıra numarasını sıralamaya göre ayarla
-                    const displayIndex = currentSort === 'asc' ? 
-                        sortedHistory.length - index : 
-                        index + 1;
-
-                    return `<li>
-                        <div class="left-content">
-                            <span class="index-number">#${displayIndex}</span>
-                            ${nameSpan}
-                        </div>
-                        ${numberSpan}
-                    </li>`;
-                })
-                .join('');
-            saveButton.disabled = false;
-            saveButton.style.opacity = '1';
-        }
-        
-        // Mevcut save-results-container'ı kaldır (varsa)
-        const existingContainer = document.querySelector('.save-results-container');
-        if (existingContainer) {
-            existingContainer.remove();
-        }
-        
-        // Yeni container'ı history-section'a ekle
-        document.querySelector('.history-section').appendChild(saveButtonContainer);
-        
-        clearHistoryBtn.disabled = history.length === 0;
-        adjustHistoryHeight();
-    }
-
-    // Sonuçları indirme fonksiyonu
-    function downloadResults() {
-        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
-        if (history.length === 0) {
-            alert(translations[currentLang].noResultsToSave);
-            return;
-        }
-
-        const namesList = localStorage.getItem('namesList') || '';
-        const names = namesList.split('\n').filter(name => name.trim());
-        const startNumber = parseInt(startNum.value) || 1;
-        const currentSort = localStorage.getItem('sortOrder') || 'desc';
-        const title = mainTitle.textContent;
-        
-        // Tarih ve saat formatı
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        
-        const dateStr = `${day}.${month}.${year}`;
-        const timeStr = `${hours}:${minutes}:${seconds}`;
-
-        let content = `${title}\n`;
-        content += `${dateStr} ${timeStr}\n\n`;
-        content += `${translations[currentLang].drawResults}:\n`;
-        content += '------------------------\n';
-
-        const sortedHistory = currentSort === 'asc' ? [...history].reverse() : [...history];
-        
-        sortedHistory.forEach((num, index) => {
-            const listIndex = num - startNumber;
-            const listItem = names[listIndex];
-            const displayIndex = index + 1;
-            
-            if (listItem) {
-                content += `${displayIndex}. ${listItem} (${num})\n`;
-            } else {
-                content += `${displayIndex}. ${num}\n`;
-            }
-        });
-
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        // Dosya adında da aynı tarih formatını kullan
-        a.download = `cekilis_sonuclari_${day}-${month}-${year}.txt`;
-        
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    }
-
-    // Çekilişi bitir
+    // Çekilişi bitir butonuna tıklandığında otomatik çekimi de durdur
     clearHistoryBtn.addEventListener('click', () => {
         if (confirm(translations[currentLang].confirmEnd)) {
+            stopAutoDraw();
             localStorage.removeItem('lotteryHistory');
             localStorage.removeItem('lotteryRange');
             usedNumbers.clear();
@@ -899,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
         animationSpeed.value = savedSpeed;
     }
 
-    // Ses durumunu başlangıçta ayarla
+    // Ses durumunu başlangıta ayarla
     updateSoundIcon();
 
     // Ses açma/kapama kontrolü
@@ -938,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('drawTitle', newTitle);
     });
 
-    // Sayfa yüklendiğinde başlığı y��kle
+    // Sayfa yüklendiğinde başlığı yükle
     loadTitle();
 
     // Ayarları sıfırlama fonksiyonu
@@ -972,7 +841,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Listeyi güncelle
             loadHistory();
 
-            // Dil ayarını varsayılana getir (tr)
+            // Dil ayarını varsay��lana getir (tr)
             localStorage.setItem('language', 'tr');
             document.querySelectorAll('.lang-option').forEach(btn => {
                 btn.classList.remove('active');
@@ -1040,15 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Çekiliş bittiğinde
     function endDraw() {
         pickButton.disabled = true;
-        const message = document.createElement('span');
-        message.style.marginTop = '20px';
-        message.style.color = '#198754';
-        message.style.fontWeight = '500';
-        message.style.display = 'inline-block';
-        message.textContent = translations[currentLang].drawEnded;
-        if (!pickButton.nextSibling || pickButton.nextSibling.nodeName !== 'SPAN') {
-            pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
-        }
+        drawError.innerHTML = translations[currentLang].drawEnded;
     }
 
     // createSpeedButtons fonksiyonunda hız değerlerini düzeltelim
@@ -1288,10 +1149,54 @@ document.addEventListener('DOMContentLoaded', () => {
         animateBall(currentBallIndex);
     }
 
+    // Draw type değiştiğinde topları güncelle
+    drawTypeSelect.addEventListener('change', () => {
+        const history = document.querySelector('.history-section').querySelector('li');
+        const end = parseInt(endNum.value);
+        
+        // Draw type'ı localStorage'a kaydet
+        localStorage.setItem('drawType', drawTypeSelect.value);
+        
+        if (!isNaN(end)) {
+            const digits = end.toString().length;
+            
+            // Her zaman sayı kadar top göster
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < digits; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
+            }
+        }
+        
+        // Çoklu otomatik seçildiğinde input'u göster
+        if (drawTypeSelect.value === 'multi-auto') {
+            drawCountContainer.style.display = 'block';
+            drawCountInput.placeholder = translations[currentLang].drawCount;
+        } else {
+            drawCountContainer.style.display = 'none';
+        }
+        
+        if (!history) {
+            pickButton.textContent = translations[currentLang].startDraw;
+        } else {
+            pickButton.textContent = drawTypeSelect.value === 'single-ball' ? 
+                translations[currentLang].pickNewBall : 
+                translations[currentLang].pickNewNumber;
+        }
+    });
+
     // Sayfa yüklendiğinde draw type'ı yükle
     const savedDrawType = localStorage.getItem('drawType');
     if (savedDrawType) {
         drawTypeSelect.value = savedDrawType;
+        
+        // Çoklu otomatik seçiliyse input'u göster
+        if (savedDrawType === 'multi-auto') {
+            drawCountContainer.style.display = 'block';
+            drawCountInput.placeholder = translations[currentLang].drawCount;
+        }
         
         // Eğer çekiliş devam ediyorsa buton metnini güncelle
         const history = document.querySelector('.history-section').querySelector('li');
@@ -1299,6 +1204,192 @@ document.addEventListener('DOMContentLoaded', () => {
             pickButton.textContent = savedDrawType === 'single-ball' ? 
                 translations[currentLang].pickNewBall : 
                 translations[currentLang].pickNewNumber;
+        }
+    }
+
+    // Otomatik çekim fonksiyonları
+    function startAutoDraw() {
+        const drawCount = parseInt(drawCountInput.value);
+        if (isNaN(drawCount) || drawCount < 1 || drawCount > 100) {
+            alert(translations[currentLang].invalidDrawCount);
+            return;
+        }
+
+        let currentDraw = 0;
+        isAutoDrawing = true;
+        pickButton.textContent = translations[currentLang].stopDraw;
+        drawCountInput.disabled = true;
+
+        function draw() {
+            if (currentDraw < drawCount && isAutoDrawing) {
+                const end = parseInt(endNum.value);
+                const start = parseInt(startNum.value);
+                
+                // Kullanılabilir sayı kalmadıysa durdur
+                if (usedNumbers.size >= (end - start + 1)) {
+                    stopAutoDraw();
+                    endDraw();
+                    return;
+                }
+
+                // Yeni çekim öncesi topları temizle
+                const digits = end.toString().length;
+                ballsContainer.innerHTML = '';
+                for (let i = 0; i < digits; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'ball';
+                    ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                    ballsContainer.appendChild(ball);
+                }
+
+                // Animasyon tamamlandığında bir sonraki çekimi başlat
+                animateBalls(end, () => {
+                    currentDraw++;
+                    if (currentDraw === drawCount) {
+                        setTimeout(() => {
+                            stopAutoDraw();
+                        }, 1000); // Son çekimden 1 saniye sonra durdur
+                    } else if (isAutoDrawing) {
+                        setTimeout(draw, 1000); // Bir sonraki çekimi 1 saniye sonra başlat
+                    }
+                });
+            }
+        }
+
+        // İlk çekimi başlat
+        draw();
+    }
+
+    function stopAutoDraw() {
+        isAutoDrawing = false;
+        clearInterval(autoDrawInterval);
+        pickButton.textContent = translations[currentLang].startDraw;
+        drawCountInput.disabled = false;
+    }
+
+    // animateBalls fonksiyonuna callback parametresi ekleyelim
+    function animateBalls(max, callback) {
+        const start = parseInt(startNum.value);
+        let availableNumbers = [];
+        for (let i = start; i <= max; i++) {
+            if (!usedNumbers.has(i)) {
+                availableNumbers.push(i);
+            }
+        }
+
+        if (availableNumbers.length === 0) {
+            pickButton.disabled = true;
+            drawError.innerHTML = translations[currentLang].drawEnded;
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        const randomNumber = availableNumbers[randomIndex];
+        usedNumbers.add(randomNumber);
+
+        const digits = max.toString().length;
+        const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
+        let currentIndex = 0;
+
+        function animateBall(index) {
+            if (index >= digits) {
+                saveResult(randomNumber);
+                pickButton.disabled = false;
+                
+                if (isSoundOn) {
+                    resultSound.currentTime = 0;
+                    resultSound.play();
+                }
+
+                const allBalls = document.querySelectorAll('.ball');
+                allBalls.forEach(ball => {
+                    ball.classList.add('highlight-ball-animation');
+                    setTimeout(() => {
+                        ball.classList.remove('highlight-ball-animation');
+                    }, 2000);
+                });
+
+                // Animasyon tamamlandığında callback'i çağır
+                if (callback) callback();
+                return;
+            }
+
+            const ball = document.getElementById(`ball${index}`);
+            const selectedNumber = result[index];
+            const currentSpeed = localStorage.getItem('animationSpeed') || '2';
+
+            // Sonsuz döngü için strip oluştur
+            let strip = document.createElement('div');
+            strip.className = 'number-strip';
+            
+            // 10 set rakam oluştur (sonsuz görünüm için)
+            for (let j = 0; j < 10; j++) {
+                for (let i = 0; i <= 9; i++) {
+                    let num = document.createElement('div');
+                    num.className = 'number';
+                    num.textContent = i;
+                    strip.appendChild(num);
+                }
+            }
+            
+            // Son sayıyı ekle
+            let finalNum = document.createElement('div');
+            finalNum.className = 'number';
+            finalNum.textContent = selectedNumber;
+            strip.appendChild(finalNum);
+
+            ball.innerHTML = '';
+            ball.appendChild(strip);
+
+            // Her rakam için processing sesini çal
+            if (isSoundOn) {
+                processingSound.currentTime = 0;
+                processingSound.play();
+            }
+
+            // GSAP ile animasyon
+            gsap.fromTo(strip, 
+                { y: 0 },
+                { 
+                    y: -(100 * 99 + selectedNumber * 100),
+                    duration: parseInt(currentSpeed),
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        ball.innerHTML = `<div class="number">${selectedNumber}</div>`;
+                        animateBall(index + 1);
+                    }
+                }
+            );
+        }
+
+        pickButton.disabled = true;
+        animateBall(0);
+    }
+
+    function saveResult(number) {
+        let history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        history.push(number);
+        localStorage.setItem('lotteryHistory', JSON.stringify(history));
+        
+        // Kullanılmış sayıları da kaydet
+        localStorage.setItem('usedNumbers', JSON.stringify([...usedNumbers]));
+        
+        // Geçmiş eklendiğinde butonu aktif et
+        clearHistoryBtn.disabled = false;
+        
+        loadHistory();
+
+        // Son eklenen satırı bul ve highlight animasyonunu uygula
+        const currentSort = localStorage.getItem('sortOrder') || 'desc';
+        const historyItems = historyList.querySelectorAll('li');
+        // desc modunda ilk öğe, asc modunda son öğe highlight edilmeli
+        const targetItem = currentSort === 'asc' ? historyItems[0] : historyItems[historyItems.length - 1];
+        
+        if (targetItem) {
+            targetItem.classList.add('highlight-animation');
+            setTimeout(() => {
+                targetItem.classList.remove('highlight-animation');
+            }, 2000);
         }
     }
 }); 

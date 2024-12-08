@@ -50,7 +50,13 @@
                 <!-- Toplar dinamik olarak eklenecek -->
             </div>
 
-            <button id="pickButton">Çekilişi Başlat</button>
+            <div class="draw-controls">
+                <div class="draw-count-input" style="display: none;">
+                    <input type="number" id="drawCount" min="1" max="100" placeholder="Çekim sayısı">
+                </div>
+                <button id="pickButton">Çekilişi Başlat</button>
+            </div>
+            <div id="draw-error"></div>
         </div>
 
         <div class="history-section">
