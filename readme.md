@@ -70,7 +70,7 @@ The website is fully responsive and works seamlessly on:
 
 ## 🤝 Support
 
-For questions or support, please visit [sansli.top/contact](https://sansli.top/contact)
+For questions or support, please send an email to sezeriltekin@gmail.com
 
 ## 📜 License
 
