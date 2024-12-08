@@ -169,7 +169,6 @@ button {
     padding: 12px 30px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
@@ -178,8 +177,12 @@ button {
     font-weight: bold;
 }
 
-button:hover {
-    background-color: #45a049;
+#pickButton {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+#pickButton:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
 }
 
 #historyList {
@@ -246,7 +249,7 @@ button:hover {
 .clear-button {
     padding: 6px 12px;
     font-size: 12px;
-    background-color: #dc3545;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
     border: none;
     border-radius: 4px;
@@ -257,7 +260,7 @@ button:hover {
 }
 
 .clear-button:hover {
-    background-color: #c82333;
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
 }
 
 /* Çekiliş anında buton için silik stil */
@@ -450,7 +453,7 @@ input[type="number"] {
 }
 
 .apply-button {
-    background-color: #4CAF50;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
     color: white;
     padding: 10px;
     border: none;
@@ -462,7 +465,7 @@ input[type="number"] {
 }
 
 .apply-button:hover {
-    background-color: #45a049;
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
 }
 
 /* Mobil görünüm için yeni stiller */
@@ -825,7 +828,7 @@ input::-ms-input-placeholder {
     padding: 8px;
     border: 1px solid #dee2e6;
     border-radius: 4px;
-    background-color: #f8f9fa;
+    background: #f8f9fa;
     color: #6c757d;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1010,12 +1013,12 @@ textarea,
     resize: vertical;
 }
 
-textarea,
+textarea:hover,
 .setting-item input[type="text"]:hover {
     border-color: #4CAF50;
 }
 
-textarea,
+textarea:focus,
 .setting-item input[type="text"]:focus {
     outline: none;
     border-color: #4CAF50;
@@ -1023,7 +1026,7 @@ textarea,
     background-color: white;
 }
 
-textarea,
+textarea::placeholder,
 .setting-item input[type="text"]::placeholder {
     color: #adb5bd;
     font-size: 14px;
@@ -1037,7 +1040,7 @@ textarea,
         font-size: 16px;
     }
 
-    textarea,
+    textarea::placeholder,
     .setting-item input[type="text"]::placeholder {
         font-size: 16px;
     }
