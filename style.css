@@ -425,7 +425,7 @@ input[type="number"] {
 .text-button {
     background: none;
     border: none;
-    color: #dc3545;
+    color: #858585;
     padding: 10px 0;
     font-size: 13px;
     cursor: pointer;
@@ -438,8 +438,8 @@ input[type="number"] {
 }
 
 .text-button:hover {
-    color: #f0f0f0;
-    background-color: #dc3545;
+    color: #dc3545;
+    background: none;
 }
 
 .apply-button {

@@ -5,6 +5,7 @@ const translations = {
         lastNumber: "Son Sayı",
         startDraw: "Çekilişi Başlat",
         pickNewNumber: "Yeni Sayı Çek",
+        pickNewBall: "Top Çek",
         drawResults: "Sonuçlar",
         endDraw: "Çekilişi Bitir",
         settings: "Ayarlar",
@@ -38,13 +39,17 @@ const translations = {
         editWarning: "Çekiliş başladıktan sonra isim listesini düzenleyemezsiniz, öncelikle çekilişi bitirmeniz gerekiyor.",
         startLessThanOne: "İlk sayı 1'den küçük olamaz!",
         saveResults: "Sonuçları İndir",
-        noResultsToSave: "İndirilecek sonuç bulunmuyor"
+        noResultsToSave: "İndirilecek sonuç bulunmuyor",
+        singleNumber: "TEK NUMARA",
+        singleBall: "TEK TOP",
+        multiAuto: "ÇOKLU OTOMATİK"
     },
     en: {
         firstNumber: "First Number",
         lastNumber: "Last Number",
         startDraw: "Start Draw",
         pickNewNumber: "Pick New Number",
+        pickNewBall: "Pick Ball",
         drawResults: "Results",
         endDraw: "End Draw",
         settings: "Settings",
@@ -78,7 +83,10 @@ const translations = {
         editWarning: "You cannot edit the name list after the draw has started, you need to end the draw first.",
         startLessThanOne: "First number cannot be less than 1!",
         saveResults: "Save Results",
-        noResultsToSave: "No results to save"
+        noResultsToSave: "No results to save",
+        singleNumber: "SINGLE NUMBER",
+        singleBall: "SINGLE BALL",
+        multiAuto: "MULTI AUTO"
     }
 };
 
@@ -109,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetSettingsBtn = document.getElementById('resetSettings');
     const applySettingsBtn = document.getElementById('applySettings');
     const sortOrder = document.getElementById('sortOrder');
+    const drawTypeSelect = document.getElementById('drawType');
+
+    // Global değişken olarak ekleyelim
+    let currentBallIndex = 0;
 
     // Kaydedilmiş sayıları yükle
     function loadSavedNumbers() {
@@ -118,8 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const names = (localStorage.getItem('namesList') || '').split('\n').filter(name => name.trim());
         
         if (history.length > 0) {
-            const savedUsedNumbers = JSON.parse(localStorage.getItem('usedNumbers') || '[]');
-            usedNumbers = new Set(savedUsedNumbers);
+            // Kullanılmış sayıları localStorage'dan yükle
+            usedNumbers = new Set(history);  // Değişiklik burada: savedUsedNumbers yerine direkt history kullan
 
             const savedNumbers = JSON.parse(localStorage.getItem('lotteryRange') || '{}');
             if (savedNumbers.start !== undefined && savedNumbers.end !== undefined) {
@@ -130,9 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 pickButton.textContent = translations[currentLang].pickNewNumber;
 
+                // Top sayısını çekiliş türüne göre belirle
                 const digitCount = savedNumbers.end.toString().length;
+                const ballCount = drawTypeSelect.value === 'single-ball' ? 1 : digitCount;
+                
                 ballsContainer.innerHTML = '';
-                for (let i = 0; i < digitCount; i++) {
+                for (let i = 0; i < ballCount; i++) {
                     const ball = document.createElement('div');
                     ball.className = 'ball';
                     ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
@@ -356,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('label[for="titleInput"]').textContent = translations[lang].titleLabel;
         titleInput.placeholder = translations[lang].titlePlaceholder;
 
-        // Eğer varsayılan başlık kullan��lıyorsa, yeni dildeki başlığı göster
+        // Eğer varsayılan başlık kullanılıyorsa, yeni dildeki başlığı göster
         const savedTitle = localStorage.getItem('drawTitle');
         if (!savedTitle) {
             mainTitle.textContent = translations[lang].defaultTitle;
@@ -381,6 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sort === 'desc') btn.textContent = translations[lang].descending;
             if (sort === 'asc') btn.textContent = translations[lang].ascending;
         });
+
+        // Draw type seçeneklerini güncelle
+        const drawTypeOptions = drawTypeSelect.options;
+        drawTypeOptions[0].textContent = translations[lang].singleNumber;
+        drawTypeOptions[1].textContent = translations[lang].singleBall;
+        drawTypeOptions[2].textContent = translations[lang].multiAuto;
     }
 
     // Dil seçimi değiştiğinde
@@ -422,56 +443,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // pickButton click event'ini güncelle
     pickButton.addEventListener('click', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
         
-        // İlk sayı kontrolü
-        if (isNaN(start) || start < 1) {
-            alert(translations[currentLang].startLessThanOne);
-            startNum.value = '1';
-            return;
-        }
-        
-        // Mevcut kontroller
-        if (isNaN(start) || start < 0) {
+        if (isNaN(start)) {
             alert(translations[currentLang].enterValidStart);
             return;
         }
         
-        if (!end || end <= 0) {
+        if (isNaN(end)) {
             alert(translations[currentLang].enterValidEnd);
             return;
         }
-
-        // İlk tıklamada buton yazısını değiştir
-        pickButton.textContent = translations[currentLang].pickNewNumber;
-
-        // Aralığı kaydet
-        localStorage.setItem('lotteryRange', JSON.stringify({
-            start: start,
-            end: end
-        }));
-
-        // Input'ları devre dışı bırak
-        startNum.disabled = true;
-        endNum.disabled = true;
-        namesTextarea.disabled = true;
         
-        // Mevcut topları temizle
-        ballsContainer.innerHTML = '';
-        
-        // Sayı uzunluğuna göre top oluştur
-        const digitCount = end.toString().length;
-        for (let i = 0; i < digitCount; i++) {
-            const ball = document.createElement('div');
-            ball.className = 'ball';
-            ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
-            ballsContainer.appendChild(ball);
+        if (start > end) {
+            alert(translations[currentLang].startGreaterThanEnd);
+            return;
         }
+        
+        const max = end;
+        const history = JSON.parse(localStorage.getItem('lotteryHistory') || '[]');
+        
+        if (history.length === 0) {
+            // İlk çekilişte input'ları devre dışı bırak
+            startNum.disabled = true;
+            endNum.disabled = true;
+            
+            // İlk çekilişte topları oluştur
+            const digits = max.toString().length;
+            
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < digits; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
+            }
+            
+            // Başlangıç ve bitiş sayılarını kaydet
+            localStorage.setItem('lotteryRange', JSON.stringify({ start, end }));
+        }
+        
+        // Tüm sayılar çekildiyse uyarı ver
+        if (usedNumbers.size >= (end - start + 1)) {
+            endDraw();
+            return;
+        }
+        
+        // Çekiliş türüne göre animasyonu başlat
+        if (drawTypeSelect.value === 'single-ball') {
+            animateSingleBall(max);
+        } else {
+            animateBalls(max);
+        }
+        
+        // Buton metnini güncelle
+        if (history.length === 0) {
+            pickButton.textContent = drawTypeSelect.value === 'single-ball' ? 
+                translations[currentLang].pickNewBall : 
+                translations[currentLang].pickNewNumber;
+        }
+    });
 
-        pickButton.disabled = true;
-        animateBalls(end);
+    // drawType değiştiğinde topları güncelle
+    drawTypeSelect.addEventListener('change', () => {
+        const history = document.querySelector('.history-section').querySelector('li');
+        const end = parseInt(endNum.value);
+        
+        // Draw type'ı localStorage'a kaydet
+        localStorage.setItem('drawType', drawTypeSelect.value);
+        
+        if (!isNaN(end)) {
+            const digits = end.toString().length;
+            
+            // Her zaman sayı kadar top göster
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < digits; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
+            }
+        }
+        
+        if (!history) {
+            pickButton.textContent = translations[currentLang].startDraw;
+        } else {
+            pickButton.textContent = drawTypeSelect.value === 'single-ball' ? 
+                translations[currentLang].pickNewBall : 
+                translations[currentLang].pickNewNumber;
+        }
     });
 
     function animateBalls(max) {
@@ -802,6 +865,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (message && message.textContent === translations[currentLang].drawEnded) {
                 message.remove();
             }
+
+            // Çekilişi bitir butonuna tıklandığında currentBallIndex'i sıfırla
+            currentBallIndex = 0;
+            localStorage.removeItem('currentNumber');
         }
     });
 
@@ -871,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('drawTitle', newTitle);
     });
 
-    // Sayfa yüklendiğinde başlığı yükle
+    // Sayfa yüklendiğinde başlığı y��kle
     loadTitle();
 
     // Ayarları sıfırlama fonksiyonu
@@ -914,6 +981,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             updateLanguage('tr');
+
+            // Draw type'ı varsayılana getir (single-number)
+            localStorage.setItem('drawType', 'single-number');
+            drawTypeSelect.value = 'single-number';
+            
+            // Buton metnini güncelle
+            const history = document.querySelector('.history-section').querySelector('li');
+            if (history) {
+                pickButton.textContent = translations[currentLang].pickNewNumber;
+            }
         }
     });
 
@@ -964,11 +1041,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function endDraw() {
         pickButton.disabled = true;
         const message = document.createElement('span');
-        message.style.marginLeft = '20px';
+        message.style.marginTop = '20px';
         message.style.color = '#198754';
         message.style.fontWeight = '500';
         message.style.display = 'inline-block';
-        message.style.marginTop = '10px';
         message.textContent = translations[currentLang].drawEnded;
         if (!pickButton.nextSibling || pickButton.nextSibling.nodeName !== 'SPAN') {
             pickButton.parentNode.insertBefore(message, pickButton.nextSibling);
@@ -1075,4 +1151,154 @@ document.addEventListener('DOMContentLoaded', () => {
     createSpeedButtons();
     createSortButtons();
     createLanguageButtons();
+
+    // Tek top çekimi için fonksiyonu güncelleyelim
+    function animateSingleBall(max) {
+        const digits = max.toString().length;
+        let randomNumber;
+        
+        // İlk çekilişte yeni sayı seç
+        if (currentBallIndex === 0) {
+            do {
+                randomNumber = Math.floor(Math.random() * (max - 1 + 1)) + 1;
+            } while (usedNumbers.has(randomNumber));
+
+            // Seçilen sayıyı localStorage'a kaydet
+            localStorage.setItem('currentNumber', randomNumber.toString());
+            
+            // Topları yeniden oluştur
+            ballsContainer.innerHTML = '';
+            for (let i = 0; i < digits; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerHTML = `<div class="number-strip" id="ball${i}"></div>`;
+                ballsContainer.appendChild(ball);
+            }
+        } else {
+            // Mevcut sayıyı localStorage'dan al
+            randomNumber = parseInt(localStorage.getItem('currentNumber'));
+            
+            // Önceki topların içeriğini koru
+            const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
+            for (let i = 0; i < currentBallIndex; i++) {
+                const ball = document.getElementById(`ball${i}`);
+                if (ball) {
+                    ball.innerHTML = `<div class="number">${result[i]}</div>`;
+                }
+            }
+        }
+
+        const result = randomNumber.toString().padStart(digits, '0').split('').map(Number);
+
+        function animateBall(index) {
+            if (index >= digits) {
+                // Son topa geldiysek
+                if (currentBallIndex === digits) {
+                    saveResult(randomNumber);
+                    usedNumbers.add(randomNumber);
+                    currentBallIndex = 0; // Sıfırla
+                    localStorage.removeItem('currentNumber'); // Geçici sayıyı temizle
+                    
+                    if (isSoundOn) {
+                        resultSound.currentTime = 0;
+                        resultSound.play();
+                    }
+
+                    // Highlight efekti
+                    const allBalls = document.querySelectorAll('.ball');
+                    allBalls.forEach(ball => {
+                        ball.classList.add('highlight-ball-animation');
+                        setTimeout(() => {
+                            ball.classList.remove('highlight-ball-animation');
+                        }, 2000);
+                    });
+                }
+                pickButton.disabled = false;
+                return;
+            }
+
+            const ball = document.getElementById(`ball${index}`);
+            const selectedNumber = result[index];
+            const currentSpeed = localStorage.getItem('animationSpeed') || '2';
+
+            // Strip oluştur ve animasyon yap
+            let strip = document.createElement('div');
+            strip.className = 'number-strip';
+            
+            for (let j = 0; j < 10; j++) {
+                for (let i = 0; i <= 9; i++) {
+                    let num = document.createElement('div');
+                    num.className = 'number';
+                    num.textContent = i;
+                    strip.appendChild(num);
+                }
+            }
+            
+            let finalNum = document.createElement('div');
+            finalNum.className = 'number';
+            finalNum.textContent = selectedNumber;
+            strip.appendChild(finalNum);
+
+            ball.innerHTML = '';
+            ball.appendChild(strip);
+
+            if (isSoundOn) {
+                processingSound.currentTime = 0;
+                processingSound.play();
+            }
+
+            gsap.fromTo(strip, 
+                { y: 0 },
+                { 
+                    y: -(100 * 99 + selectedNumber * 100),
+                    duration: parseInt(currentSpeed),
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        ball.innerHTML = `<div class="number">${selectedNumber}</div>`;
+                        currentBallIndex++; // Bir sonraki topa geç
+                        pickButton.disabled = false;
+
+                        // Son topun animasyonu bittiyse sonucu kaydet
+                        if (currentBallIndex === digits) {
+                            saveResult(randomNumber);
+                            usedNumbers.add(randomNumber);
+                            currentBallIndex = 0;
+                            localStorage.removeItem('currentNumber');
+                            
+                            if (isSoundOn) {
+                                resultSound.currentTime = 0;
+                                resultSound.play();
+                            }
+
+                            // Highlight efekti
+                            const allBalls = document.querySelectorAll('.ball');
+                            allBalls.forEach(ball => {
+                                ball.classList.add('highlight-ball-animation');
+                                setTimeout(() => {
+                                    ball.classList.remove('highlight-ball-animation');
+                                }, 2000);
+                            });
+                        }
+                    }
+                }
+            );
+        }
+
+        pickButton.disabled = true;
+        animateBall(currentBallIndex);
+    }
+
+    // Sayfa yüklendiğinde draw type'ı yükle
+    const savedDrawType = localStorage.getItem('drawType');
+    if (savedDrawType) {
+        drawTypeSelect.value = savedDrawType;
+        
+        // Eğer çekiliş devam ediyorsa buton metnini güncelle
+        const history = document.querySelector('.history-section').querySelector('li');
+        if (history) {
+            pickButton.textContent = savedDrawType === 'single-ball' ? 
+                translations[currentLang].pickNewBall : 
+                translations[currentLang].pickNewNumber;
+        }
+    }
 }); 
