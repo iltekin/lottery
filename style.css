@@ -61,7 +61,6 @@ body {
     flex-direction: column;
     min-height: 300px;
     width: 340px;
-    max-width: 90%;
 }
 
 .empty-state {
@@ -482,7 +481,7 @@ input[type="number"] {
         padding: 15px;
         width: 100%;
         box-sizing: border-box;
-        min-width: auto;
+        width: 100%;
     }
 
     .input-section {
