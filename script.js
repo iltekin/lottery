@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = parseInt(startNum.value);
         const end = parseInt(endNum.value);
         
-        // ��lk sayı 1'den küçük olamaz kontrolü
+        // İlk sayı 1'den küçük olamaz kontrolü
         if (start < 1) {
             alert(translations[currentLang].startLessThanOne);
             startNum.value = '1';
@@ -810,8 +810,9 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('drawTitle', newTitle);
     });
 
-    // Sayfa yüklendiğinde başlığı yükle
-    loadTitle();
+    // Sayfa yüklendiğinde başlangıç durumunu ayarla
+    loadHistory();
+    loadSavedNumbers();
 
     // Ayarları sıfırlama fonksiyonu
     resetSettingsBtn.addEventListener('click', () => {
@@ -877,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadHistory();  // Listeyi yeniden yükle
     });
 
-    // Sayfa yüklendiğinde sıralama tercihini y��kle
+    // Sayfa yüklendiğinde sıralama tercihini yükle
     const savedSort = localStorage.getItem('sortOrder') || 'desc';
     sortOrder.value = savedSort;
 
@@ -1395,4 +1396,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000);
         }
     }
+
+    document.getElementById('clearNames').addEventListener('click', function() {
+        document.getElementById('namesTextarea').value = '';
+        document.getElementById('namesPopup').style.display = 'none';  // Popup'ı kapat
+    });
+
+    // Mobil görünümde sıralamayı kontrol et
+    function checkMobileSort() {
+        if (window.innerWidth <= 768) {
+            localStorage.setItem('sortOrder', 'asc');
+            loadHistory();
+        }
+    }
+
+    // Sayfa yüklendiğinde kontrol et
+    checkMobileSort();
+
+    // Pencere boyutu değiştiğinde kontrol et
+    window.addEventListener('resize', checkMobileSort);
 }); 

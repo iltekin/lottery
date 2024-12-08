@@ -409,6 +409,10 @@ input[type="number"] {
     content: "\f6a9";
 }
 
+.main-title-container {
+    padding: 60px 0 0 0;
+}
+
 .main-title {
     text-align: center;
     color: #333;
@@ -472,6 +476,10 @@ input[type="number"] {
 @media (max-width: 768px) {
     .main-container {
         padding: 30px;
+    }
+
+    .main-title-container {
+        display: none;
     }
 
     .lottery-section {
@@ -638,6 +646,10 @@ input[type="number"] {
 
     .close-popup {
         padding: 10px;
+    }
+
+    .setting-item:first-child {  /* Başlık input'unun olduğu setting-item */
+        display: none;
     }
 }
 
