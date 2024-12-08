@@ -49,7 +49,7 @@ const translations = {
         drawCountPlaceholder: "Çekim sayısı",
         uploadImageText: "Resim seçmek için tıklayın",
         backgroundImageLabel: "Arkaplan Resmi",
-        footerText: 'Bu proje <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">Sezer İltekin</a> tarafından <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">açık kaynak</a> olarak geliştirilmiştir.',
+        footerText: '<a href="https://sansli.top">sansli.top</a> projesi <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">sezer iltekin</a> tarafından <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">açık kaynak</a> olarak geliştirilmiştir.<br><a href="https://buymeacoffee.com/sezeriltekin" target="_blank" rel="noopener noreferrer"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Bana Kahve Ismarla"></a>'
     },
     en: {
         firstNumber: "First Number",
@@ -100,8 +100,8 @@ const translations = {
         drawCountPlaceholder: "Draw count",
         uploadImageText: "Click to select image",
         backgroundImageLabel: "Background Image",
-        footerText: 'This project is developed as <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">open source</a> by <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">Sezer İltekin</a>.',
-    }
+        footerText: '<a href="https://sansli.top">sansli.top</a> project is developed as <a href="https://github.com/iltekin/sansli-top" target="_blank" rel="noopener noreferrer">open source</a> by <a href="https://x.com/sezeriltekin" target="_blank" rel="noopener noreferrer">sezer iltekin</a>.<br><a href="https://buymeacoffee.com/sezeriltekin" target="_blank" rel="noopener noreferrer"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee"></a>'
+}
 };
 
 document.addEventListener('DOMContentLoaded', () => {

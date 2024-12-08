@@ -858,7 +858,7 @@ input::-ms-input-placeholder {
     }
     
     .control-icons > div:nth-child(2) {
-        flex: 2;  /* Orta kıs��m mobilde biraz daha geniş olsun */
+        flex: 2;  /* Orta kısm mobilde biraz daha geniş olsun */
     }
 }
 
@@ -897,9 +897,8 @@ input::-ms-input-placeholder {
 }
 
 .save-results-button:hover:not(:disabled) {
-    background-color: #198754;
-    color: white;
-    border-color: #198754;
+    background-color: #e8e8e8;
+    border-color: #dee2e6;
 }
 
 .save-results-button:disabled {
@@ -1202,8 +1201,12 @@ textarea::placeholder,
     text-align: center;
     padding: 20px;
     color: #666;
-    font-size: 10px;
+    font-size: 11px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .footer a {
@@ -1215,6 +1218,16 @@ textarea::placeholder,
 .footer a:hover {
     color: #0056b3;
     text-decoration: underline;
+}
+
+.footer img {
+    height: 30px;
+    margin-top: 10px;
+    transition: transform 0.2s ease;
+}
+
+.footer img:hover {
+    transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
